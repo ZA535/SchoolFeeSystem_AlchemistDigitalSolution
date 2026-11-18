@@ -5,6 +5,8 @@ import { useAuth } from '../auth/AuthContext.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
 import LoadingPanel from '../components/LoadingPanel.js';
+import TablePagination from '../components/TablePagination.js';
+import { usePagination } from '../hooks/usePagination.js';
 
 export default function Reports() {
   const { isAdmin } = useAuth();
@@ -48,6 +50,10 @@ export default function Reports() {
       .catch(() => setAudit([]))
       .finally(() => setAuditLoading(false));
   }, [isAdmin]);
+
+  const defaulterRows = defaulters?.defaulters ?? [];
+  const defaultersPagination = usePagination(defaulterRows, undefined, [year, month]);
+  const auditPagination = usePagination(audit);
 
   return (
     <div className="page">
@@ -94,7 +100,7 @@ export default function Reports() {
               </tr>
             </thead>
             <tbody>
-              {(defaulters?.defaulters ?? []).map((v) => (
+              {defaultersPagination.pageItems.map((v) => (
                 <tr key={v.id}>
                   <td>{v.student?.full_name}</td>
                   <td>{v.student?.roll_number}</td>
@@ -111,8 +117,18 @@ export default function Reports() {
                 </tr>
               )}
             </tbody>
-          </table>
+            </table>
         </div>
+        )}
+        {!defaultersLoading && defaulterRows.length > 0 && (
+          <TablePagination
+            page={defaultersPagination.page}
+            totalPages={defaultersPagination.totalPages}
+            totalItems={defaultersPagination.totalItems}
+            startIndex={defaultersPagination.startIndex}
+            endIndex={defaultersPagination.endIndex}
+            onPageChange={defaultersPagination.setPage}
+          />
         )}
       </div>
 
@@ -162,7 +178,7 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {audit.map((row) => (
+                {auditPagination.pageItems.map((row) => (
                   <tr key={row.id}>
                     <td>{new Date(row.created_at).toLocaleString()}</td>
                     <td>{row.user_email || '—'}</td>
@@ -183,6 +199,16 @@ export default function Reports() {
               </tbody>
             </table>
           </div>
+          )}
+          {!auditLoading && audit.length > 0 && (
+            <TablePagination
+              page={auditPagination.page}
+              totalPages={auditPagination.totalPages}
+              totalItems={auditPagination.totalItems}
+              startIndex={auditPagination.startIndex}
+              endIndex={auditPagination.endIndex}
+              onPageChange={auditPagination.setPage}
+            />
           )}
         </div>
       )}

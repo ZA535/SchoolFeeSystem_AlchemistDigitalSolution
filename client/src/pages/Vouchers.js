@@ -8,6 +8,8 @@ import { useAuth } from '../auth/AuthContext.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
 import InlineFormCard from '../components/InlineFormCard.js';
+import TablePagination from '../components/TablePagination.js';
+import { usePagination } from '../hooks/usePagination.js';
 
 export default function Vouchers() {
   const { canCollect } = useAuth();
@@ -54,6 +56,14 @@ export default function Vouchers() {
   const classOptions = [
     ...new Set(vouchers.map((v) => v.student?.class_section).filter(Boolean)),
   ].sort();
+
+  const pagination = usePagination(vouchers, undefined, [
+    year,
+    month,
+    classSection,
+    statusFilter,
+    unpaidOnly,
+  ]);
 
   const openPay = (v) => {
     const remaining = Number(v.amount_due) - Number(v.amount_paid);
@@ -180,7 +190,7 @@ export default function Vouchers() {
               </tr>
             </thead>
             <tbody>
-              {vouchers.map((v) => {
+              {pagination.pageItems.map((v) => {
                 const balance = Number(v.amount_due) - Number(v.amount_paid);
                 const lp = v.latest_payment;
                 return (
@@ -243,7 +253,7 @@ export default function Vouchers() {
                   </tr>
                 );
               })}
-              {vouchers.length === 0 && (
+              {!loading && vouchers.length === 0 && (
                 <tr>
                   <td colSpan={11} className="table-empty">
                     No vouchers for this period. Generate them from the Dashboard.
@@ -253,6 +263,16 @@ export default function Vouchers() {
             </tbody>
           </table>
         </div>
+        )}
+        {!loading && (
+          <TablePagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            onPageChange={pagination.setPage}
+          />
         )}
       </div>
 

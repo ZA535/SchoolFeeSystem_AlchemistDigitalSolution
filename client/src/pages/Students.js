@@ -4,6 +4,8 @@ import { useAuth } from '../auth/AuthContext.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
 import InlineFormCard from '../components/InlineFormCard.js';
+import TablePagination from '../components/TablePagination.js';
+import { usePagination } from '../hooks/usePagination.js';
 
 const emptyForm = {
   full_name: '',
@@ -95,6 +97,7 @@ export default function Students() {
   };
 
   const classOptions = [...new Set(students.map((s) => s.class_section))].sort();
+  const pagination = usePagination(students, undefined, [filterClass, search]);
   const showForm = formOpen;
 
   return (
@@ -222,7 +225,7 @@ export default function Students() {
                 </tr>
               </thead>
               <tbody>
-                {students.map((s) => (
+                {pagination.pageItems.map((s) => (
                   <tr key={s.id}>
                     <td>{s.full_name}</td>
                     <td>{s.roll_number}</td>
@@ -263,6 +266,16 @@ export default function Students() {
               </tbody>
             </table>
           </div>
+        )}
+        {!loading && (
+          <TablePagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            onPageChange={pagination.setPage}
+          />
         )}
       </div>
     </div>

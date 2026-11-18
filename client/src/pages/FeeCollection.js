@@ -6,6 +6,8 @@ import PaymentSuccessBanner from '../components/PaymentSuccessBanner.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
 import LoadingSpinner from '../components/LoadingSpinner.js';
+import TablePagination from '../components/TablePagination.js';
+import { usePagination } from '../hooks/usePagination.js';
 
 const emptyPayForm = () => ({
   amount: '',
@@ -49,6 +51,8 @@ export default function FeeCollection() {
   const classOptions = [
     ...new Set(vouchers.map((v) => v.student?.class_section).filter(Boolean)),
   ].sort();
+
+  const pagination = usePagination(vouchers, undefined, [year, month, classSection]);
 
   const selectVoucher = (v) => {
     const remaining = Number(v.amount_due) - Number(v.amount_paid);
@@ -137,6 +141,7 @@ export default function FeeCollection() {
         {error && <p className="error-banner">{error}</p>}
 
         <div className="collect-layout">
+          <div className="collect-list">
           {loading ? (
             <TableSkeleton rows={7} columns={6} />
           ) : (
@@ -153,7 +158,7 @@ export default function FeeCollection() {
                 </tr>
               </thead>
               <tbody>
-                {vouchers.map((v) => {
+                {pagination.pageItems.map((v) => {
                   const balance = Number(v.amount_due) - Number(v.amount_paid);
                   const isSel = selected?.id === v.id;
                   return (
@@ -177,7 +182,7 @@ export default function FeeCollection() {
                     </tr>
                   );
                 })}
-                {vouchers.length === 0 && (
+                {!loading && vouchers.length === 0 && (
                   <tr>
                     <td colSpan={6} style={{ color: 'var(--muted)' }}>
                       No unpaid vouchers for {monthLabel(Number(year), Number(month))}.
@@ -189,6 +194,17 @@ export default function FeeCollection() {
             </table>
           </div>
           )}
+          {!loading && (
+            <TablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              startIndex={pagination.startIndex}
+              endIndex={pagination.endIndex}
+              onPageChange={pagination.setPage}
+            />
+          )}
+          </div>
 
           <div className="card collect-panel">
             <h3 style={{ marginTop: 0 }}>Payment entry</h3>

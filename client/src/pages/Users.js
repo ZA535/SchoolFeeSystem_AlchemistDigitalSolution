@@ -5,6 +5,8 @@ import { Navigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
 import InlineFormCard from '../components/InlineFormCard.js';
+import TablePagination from '../components/TablePagination.js';
+import { usePagination } from '../hooks/usePagination.js';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -73,6 +75,8 @@ export default function Users() {
       setSaving(false);
     }
   };
+
+  const pagination = usePagination(users);
 
   const toggleActive = async (u) => {
     try {
@@ -172,7 +176,7 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {pagination.pageItems.map((u) => (
                   <tr key={u.id}>
                     <td>{u.full_name}</td>
                     <td>{u.email}</td>
@@ -199,6 +203,16 @@ export default function Users() {
               </tbody>
             </table>
           </div>
+        )}
+        {!listLoading && (
+          <TablePagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            onPageChange={pagination.setPage}
+          />
         )}
       </div>
     </div>
