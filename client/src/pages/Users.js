@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext.js';
 import { api } from '../api.js';
 import { Navigate } from 'react-router-dom';
+import PageHeader from '../components/PageHeader.js';
+import TableSkeleton from '../components/TableSkeleton.js';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -12,6 +14,7 @@ const ROLES = [
 export default function Users() {
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     email: '',
@@ -20,11 +23,13 @@ export default function Users() {
     role: 'accountant',
   });
 
-  const load = () => {
-    api
+  const load = ({ silent = false } = {}) => {
+    if (!silent) setListLoading(true);
+    return api
       .getUsers()
       .then(setUsers)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setListLoading(false));
   };
 
   useEffect(() => {
@@ -41,7 +46,7 @@ export default function Users() {
     try {
       await api.createUser(form);
       setForm({ email: '', password: '', full_name: '', role: 'accountant' });
-      load();
+      await load({ silent: true });
     } catch (err) {
       setError(err.message);
     }
@@ -50,21 +55,20 @@ export default function Users() {
   const toggleActive = async (u) => {
     try {
       await api.updateUser(u.id, { is_active: !u.is_active });
-      load();
+      await load({ silent: true });
     } catch (err) {
       setError(err.message);
     }
   };
 
   return (
-    <>
-      <div className="card">
-        <h2>Staff users</h2>
-        <p style={{ color: 'var(--muted)' }}>
-          Admin can add accountants and read-only viewers. Secrets stay on the server
-          only.
-        </p>
-        {error && <p className="error">{error}</p>}
+    <div className="page">
+      <PageHeader
+        title="Staff users"
+        description="Add accountants and read-only viewers. Credentials are stored securely on the server."
+      />
+      <div className="card card--elevated">
+        {error && <p className="error-banner">{error}</p>}
         <form className="form-grid" onSubmit={create}>
           <label>
             Full name
@@ -111,6 +115,9 @@ export default function Users() {
           </button>
         </form>
       </div>
+      {listLoading ? (
+        <TableSkeleton rows={5} columns={5} />
+      ) : (
       <div className="card table-wrap">
         <table>
           <thead>
@@ -143,6 +150,7 @@ export default function Users() {
           </tbody>
         </table>
       </div>
-    </>
+      )}
+    </div>
   );
 }

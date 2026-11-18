@@ -8,8 +8,8 @@ export default function ProtectedApp() {
 
   if (loading) {
     return (
-      <div className="layout">
-        <LoadingSpinner label="Loading session…" />
+      <div className="loader-screen">
+        <LoadingSpinner label="Checking your session…" size="lg" centered />
       </div>
     );
   }

@@ -3,6 +3,9 @@ import { api, formatMoney, monthLabel } from '../api.js';
 import { paymentMethodLabel } from '../constants/paymentMethods.js';
 import PaymentEntryForm from '../components/PaymentEntryForm.js';
 import PaymentSuccessBanner from '../components/PaymentSuccessBanner.js';
+import PageHeader from '../components/PageHeader.js';
+import TableSkeleton from '../components/TableSkeleton.js';
+import LoadingSpinner from '../components/LoadingSpinner.js';
 
 const emptyPayForm = () => ({
   amount: '',
@@ -16,6 +19,7 @@ export default function FeeCollection() {
   const [month, setMonth] = useState(String(now.getMonth() + 1));
   const [classSection, setClassSection] = useState('');
   const [vouchers, setVouchers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
   const [payForm, setPayForm] = useState(emptyPayForm());
@@ -23,9 +27,10 @@ export default function FeeCollection() {
   const [payError, setPayError] = useState('');
   const [lastSuccess, setLastSuccess] = useState(null);
 
-  const load = () => {
+  const load = ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setError('');
-    api
+    return api
       .getVouchers({
         year,
         month,
@@ -33,7 +38,8 @@ export default function FeeCollection() {
         unpaid: 'true',
       })
       .then(setVouchers)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -71,7 +77,7 @@ export default function FeeCollection() {
         studentName: selected.student?.full_name,
       });
       setSelected(null);
-      load();
+      await load({ silent: true });
     } catch (err) {
       setPayError(err.message);
     } finally {
@@ -80,19 +86,18 @@ export default function FeeCollection() {
   };
 
   return (
-    <>
+    <div className="page">
       <PaymentSuccessBanner
         result={lastSuccess}
         onDismiss={() => setLastSuccess(null)}
       />
 
-      <div className="card">
-        <h2>Fee collection &amp; payment entry</h2>
-        <p style={{ color: 'var(--muted)', marginTop: 0 }}>
-          Record cash, bank, or EasyPaisa/JazzCash payments. Each entry gets an auto
-          receipt number; vouchers are marked <strong>paid</strong> when fully
-          collected.
-        </p>
+      <PageHeader
+        title="Fee collection"
+        description="Record cash, bank, or EasyPaisa/JazzCash payments. Receipt numbers are assigned automatically; vouchers mark paid when fully collected."
+      />
+
+      <div className="card card--elevated">
 
         <div className="filters">
           <label>
@@ -129,9 +134,12 @@ export default function FeeCollection() {
           </label>
         </div>
 
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error-banner">{error}</p>}
 
         <div className="collect-layout">
+          {loading ? (
+            <TableSkeleton rows={7} columns={6} />
+          ) : (
           <div className="table-wrap">
             <table>
               <thead>
@@ -180,6 +188,7 @@ export default function FeeCollection() {
               </tbody>
             </table>
           </div>
+          )}
 
           <div className="card collect-panel">
             <h3 style={{ marginTop: 0 }}>Payment entry</h3>
@@ -208,6 +217,8 @@ export default function FeeCollection() {
                   error={payError}
                 />
               </>
+            ) : loading ? (
+              <LoadingSpinner label="Loading unpaid vouchers…" />
             ) : (
               <p style={{ color: 'var(--muted)' }}>
                 Select a student voucher to record a payment.
@@ -216,6 +227,6 @@ export default function FeeCollection() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -9,7 +9,7 @@ export default function PaymentSuccessBanner({ result, onDismiss }) {
 
   return (
     <div className="card success-banner no-print">
-      <h3 style={{ marginTop: 0 }}>Payment recorded</h3>
+      <h3 className="success-banner__title">Payment recorded</h3>
       <dl className="receipt-summary">
         <div>
           <dt>Receipt number</dt>

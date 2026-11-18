@@ -5,6 +5,8 @@ import { paymentMethodLabel } from '../constants/paymentMethods.js';
 import PaymentEntryForm from '../components/PaymentEntryForm.js';
 import PaymentSuccessBanner from '../components/PaymentSuccessBanner.js';
 import { useAuth } from '../auth/AuthContext.js';
+import PageHeader from '../components/PageHeader.js';
+import TableSkeleton from '../components/TableSkeleton.js';
 
 export default function Vouchers() {
   const { canCollect } = useAuth();
@@ -15,6 +17,7 @@ export default function Vouchers() {
   const [statusFilter, setStatusFilter] = useState('');
   const [unpaidOnly, setUnpaidOnly] = useState(false);
   const [vouchers, setVouchers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [payModal, setPayModal] = useState(null);
   const [payForm, setPayForm] = useState({
@@ -26,7 +29,7 @@ export default function Vouchers() {
   const [payError, setPayError] = useState('');
   const [lastSuccess, setLastSuccess] = useState(null);
 
-  const load = () => {
+  const load = ({ silent = false } = {}) => {
     const params = {
       year,
       month,
@@ -34,10 +37,13 @@ export default function Vouchers() {
       status: statusFilter || undefined,
       unpaid: unpaidOnly ? 'true' : undefined,
     };
-    api
+    if (!silent) setLoading(true);
+    setError('');
+    return api
       .getVouchers(params)
       .then(setVouchers)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -76,7 +82,7 @@ export default function Vouchers() {
         studentName: payModal.student?.full_name,
       });
       setPayModal(null);
-      load();
+      await load({ silent: true });
     } catch (err) {
       setPayError(err.message);
     } finally {
@@ -85,14 +91,18 @@ export default function Vouchers() {
   };
 
   return (
-    <>
+    <div className="page">
       <PaymentSuccessBanner
         result={lastSuccess}
         onDismiss={() => setLastSuccess(null)}
       />
 
-      <div className="card">
-        <h2>Fee vouchers — {monthLabel(Number(year), Number(month))}</h2>
+      <PageHeader
+        title={`Fee vouchers — ${monthLabel(Number(year), Number(month))}`}
+        description="Filter by class or status, record payments, print challans"
+      />
+
+      <div className="card card--elevated">
         <div className="filters">
           <label>
             Year
@@ -147,7 +157,10 @@ export default function Vouchers() {
             Unpaid only
           </label>
         </div>
-        {error && !payModal && <p className="error">{error}</p>}
+        {error && !payModal && <p className="error-banner">{error}</p>}
+        {loading ? (
+          <TableSkeleton rows={8} columns={8} />
+        ) : (
         <div className="table-wrap">
           <table>
             <thead>
@@ -231,7 +244,7 @@ export default function Vouchers() {
               })}
               {vouchers.length === 0 && (
                 <tr>
-                  <td colSpan={11} style={{ color: 'var(--muted)' }}>
+                  <td colSpan={11} className="table-empty">
                     No vouchers for this period. Generate them from the Dashboard.
                   </td>
                 </tr>
@@ -239,6 +252,7 @@ export default function Vouchers() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {payModal && canCollect && (
@@ -256,6 +270,6 @@ export default function Vouchers() {
           />
         </div>
       )}
-    </>
+    </div>
   );
 }

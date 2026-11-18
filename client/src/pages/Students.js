@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api, formatMoney } from '../api.js';
 import { useAuth } from '../auth/AuthContext.js';
+import PageHeader from '../components/PageHeader.js';
+import TableSkeleton from '../components/TableSkeleton.js';
 
 const emptyForm = {
   full_name: '',
@@ -18,13 +20,17 @@ export default function Students() {
   const [filterClass, setFilterClass] = useState('');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const load = () => {
-    api
+  const load = ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
+    setError('');
+    return api
       .getStudents({ class_section: filterClass || undefined, q: search || undefined })
       .then(setStudents)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -66,7 +72,7 @@ export default function Students() {
         await api.createStudent(payload);
       }
       cancelEdit();
-      load();
+      await load({ silent: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -77,11 +83,15 @@ export default function Students() {
   const classOptions = [...new Set(students.map((s) => s.class_section))].sort();
 
   return (
-    <>
+    <div className="page">
+      <PageHeader
+        title="Students"
+        description="Enroll students, set monthly fees, and filter by class"
+      />
       {canWrite && (
         <div className="card">
-          <h2>{editingId ? 'Edit student' : 'Add student'}</h2>
-          {error && <p className="error">{error}</p>}
+          <h3 className="card__title">{editingId ? 'Edit student' : 'Add student'}</h3>
+          {error && <p className="error-banner">{error}</p>}
           <form className="form-grid" onSubmit={submit}>
             <label>
               Full name
@@ -146,8 +156,8 @@ export default function Students() {
         </div>
       )}
 
-      <div className="card">
-        <h2>Student records</h2>
+      <div className="card card--elevated">
+        <h3 className="card__title">Student records</h3>
         <div className="filters">
           <label>
             Search
@@ -172,6 +182,9 @@ export default function Students() {
             </select>
           </label>
         </div>
+        {loading ? (
+          <TableSkeleton rows={7} columns={6} />
+        ) : (
         <div className="table-wrap">
           <table>
             <thead>
@@ -215,9 +228,9 @@ export default function Students() {
                   </td>
                 </tr>
               ))}
-              {students.length === 0 && (
+              {!loading && students.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ color: 'var(--muted)' }}>
+                  <td colSpan={6} className="table-empty">
                     No students yet.
                   </td>
                 </tr>
@@ -225,7 +238,8 @@ export default function Students() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }

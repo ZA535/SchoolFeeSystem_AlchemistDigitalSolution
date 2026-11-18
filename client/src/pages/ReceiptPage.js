@@ -2,19 +2,24 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import ReceiptPrint from '../components/ReceiptPrint.js';
+import LoadingPanel from '../components/LoadingPanel.js';
 
 export default function ReceiptPage() {
   const { id } = useParams();
   const [params] = useSearchParams();
   const paymentId = params.get('payment');
   const [voucher, setVoucher] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
     api
       .getVoucher(id)
       .then(setVoucher)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, [id]);
 
   const payment =
@@ -40,7 +45,9 @@ export default function ReceiptPage() {
           schoolName={import.meta.env.VITE_SCHOOL_NAME || 'Your School Name'}
         />
       )}
-      {!voucher && !error && <p>Loading…</p>}
+      {loading && !error && (
+        <LoadingPanel label="Loading receipt…" minHeight="14rem" />
+      )}
     </div>
   );
 }

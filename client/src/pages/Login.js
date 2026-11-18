@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.js';
 
+const schoolName = import.meta.env.VITE_SCHOOL_NAME || 'School Fee Management';
+
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -25,36 +27,52 @@ export default function Login() {
   };
 
   return (
-    <div className="login-wrap">
-      <div className="card login-card">
-        <h1 style={{ marginTop: 0 }}>School Fee System</h1>
-        <p style={{ color: 'var(--muted)' }}>Sign in with your staff account</p>
-        {error && <p className="error">{error}</p>}
-        <form className="form-grid" onSubmit={submit}>
-          <label>
-            Email
-            <input
-              type="email"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
+    <div className="login-scene">
+      <aside className="login-brand" aria-hidden="false">
+        <span className="brand-mark brand-mark--lg" aria-hidden />
+        <h1 className="login-brand__title">{schoolName}</h1>
+        <p className="login-brand__tagline">
+          Manage vouchers, collect fees, and print receipts — all in one place.
+        </p>
+        <ul className="login-brand__features">
+          <li>Real-time collection dashboard</li>
+          <li>Partial payments &amp; auto receipt numbers</li>
+          <li>Defaulter reports for follow-up</li>
+        </ul>
+      </aside>
+      <div className="login-panel">
+        <div className="card login-card">
+          <h2 className="login-card__heading">Welcome back</h2>
+          <p className="login-card__hint">Sign in with your staff account</p>
+          {error ? <p className="error-banner">{error}</p> : null}
+          <form className="form-grid form-grid--wide" onSubmit={submit}>
+            <label>
+              Email
+              <input
+                type="email"
+                autoComplete="username"
+                placeholder="you@school.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </label>
+            <button type="submit" className="btn btn-block" disabled={saving}>
+              {saving ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

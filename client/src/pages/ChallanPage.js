@@ -2,17 +2,22 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import ChallanPrint from '../components/ChallanPrint.js';
+import LoadingPanel from '../components/LoadingPanel.js';
 
 export default function ChallanPage() {
   const { id } = useParams();
   const [voucher, setVoucher] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
     api
       .getVoucher(id)
       .then(setVoucher)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, [id]);
 
   return (
@@ -32,7 +37,9 @@ export default function ChallanPage() {
           schoolName={import.meta.env.VITE_SCHOOL_NAME || 'Your School Name'}
         />
       )}
-      {!voucher && !error && <p>Loading…</p>}
+      {loading && !error && (
+        <LoadingPanel label="Loading challan…" minHeight="14rem" />
+      )}
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default function ResponsiveNav({ links, onNavigate }) {
             key={link.to}
             to={link.to}
             end={link.end}
-            className={({ isActive }) => (isActive ? 'active' : '')}
+            className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
             onClick={close}
           >
             {link.label}

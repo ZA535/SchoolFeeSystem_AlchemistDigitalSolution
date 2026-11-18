@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api, formatMoney, monthLabel } from '../api.js';
 import { paymentMethodLabel } from '../constants/paymentMethods.js';
 import { useAuth } from '../auth/AuthContext.js';
+import PageHeader from '../components/PageHeader.js';
+import TableSkeleton from '../components/TableSkeleton.js';
+import LoadingPanel from '../components/LoadingPanel.js';
 
 export default function Reports() {
   const { isAdmin } = useAuth();
@@ -13,35 +16,47 @@ export default function Reports() {
   const [daily, setDaily] = useState(null);
   const [audit, setAudit] = useState([]);
   const [error, setError] = useState('');
+  const [defaultersLoading, setDefaultersLoading] = useState(true);
+  const [dailyLoading, setDailyLoading] = useState(true);
+  const [auditLoading, setAuditLoading] = useState(false);
 
   useEffect(() => {
+    setDefaultersLoading(true);
     setError('');
     api
       .getDefaulters({ year, month })
       .then(setDefaulters)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setDefaultersLoading(false));
   }, [year, month]);
 
   useEffect(() => {
+    setDailyLoading(true);
     api
       .getDailyCollection({ date })
       .then(setDaily)
-      .catch(() => {});
+      .catch(() => setDaily(null))
+      .finally(() => setDailyLoading(false));
   }, [date]);
 
   useEffect(() => {
     if (!isAdmin) return;
+    setAuditLoading(true);
     api
       .getAuditLog()
       .then(setAudit)
-      .catch(() => setAudit([]));
+      .catch(() => setAudit([]))
+      .finally(() => setAuditLoading(false));
   }, [isAdmin]);
 
   return (
-    <>
-      <div className="card">
-        <h2>Reports</h2>
-        {error && <p className="error">{error}</p>}
+    <div className="page">
+      <PageHeader
+        title="Reports"
+        description="Overdue defaulters, daily collection totals, and admin audit trail"
+      />
+      <div className="card card--elevated">
+        {error && <p className="error-banner">{error}</p>}
 
         <h3>Overdue defaulters — {monthLabel(Number(year), Number(month))}</h3>
         <div className="filters">
@@ -64,6 +79,9 @@ export default function Reports() {
             />
           </label>
         </div>
+        {defaultersLoading ? (
+          <TableSkeleton rows={6} columns={5} />
+        ) : (
         <div className="table-wrap">
           <table>
             <thead>
@@ -95,6 +113,7 @@ export default function Reports() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       <div className="card">
@@ -103,7 +122,9 @@ export default function Reports() {
           Date
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </label>
-        {daily && (
+        {dailyLoading ? (
+          <LoadingPanel label="Loading daily totals…" minHeight="6rem" />
+        ) : daily ? (
           <>
             <p>
               <strong>{formatMoney(daily.total_collected)}</strong> from{' '}
@@ -117,12 +138,19 @@ export default function Reports() {
               ))}
             </ul>
           </>
+        ) : (
+          <p className="table-empty" style={{ padding: '1rem 0' }}>
+            No collection data for this date.
+          </p>
         )}
       </div>
 
       {isAdmin && (
         <div className="card">
           <h3>Audit trail (recent)</h3>
+          {auditLoading ? (
+            <TableSkeleton rows={5} columns={4} />
+          ) : (
           <div className="table-wrap">
             <table>
               <thead>
@@ -155,8 +183,9 @@ export default function Reports() {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 }
