@@ -79,6 +79,87 @@ router.get('/daily-collection', async (req, res, next) => {
   }
 });
 
+router.get('/monthly-summary', async (req, res, next) => {
+  try {
+    await syncVoucherStatuses();
+    const period = currentBillingPeriod();
+    const year = req.query.year ? Number(req.query.year) : period.year;
+    const month = req.query.month ? Number(req.query.month) : period.month;
+
+    const { data: vouchers, error } = await supabase
+      .from('fee_vouchers')
+      .select('amount_due, amount_paid, status, student_id')
+      .eq('billing_year', year)
+      .eq('billing_month', month);
+    if (error) throw error;
+
+    let expected = 0;
+    let collected = 0;
+    for (const v of vouchers ?? []) {
+      expected += Number(v.amount_due);
+      collected += Number(v.amount_paid);
+    }
+    const pending = Math.max(0, expected - collected);
+
+    res.json({
+      billing_year: year,
+      billing_month: month,
+      total_revenue: Math.round(collected * 100) / 100,
+      total_pending: Math.round(pending * 100) / 100,
+      total_expected: Math.round(expected * 100) / 100,
+      collection_rate_pct: expected > 0 ? Math.round((collected / expected) * 100) : 0,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/defaulters-by-class', async (req, res, next) => {
+  try {
+    await syncVoucherStatuses();
+    const period = currentBillingPeriod();
+    const year = req.query.year ? Number(req.query.year) : period.year;
+    const month = req.query.month ? Number(req.query.month) : period.month;
+
+    const { data: vouchers, error } = await supabase
+      .from('fee_vouchers')
+      .select('student_id, amount_due, amount_paid, status')
+      .eq('billing_year', year)
+      .eq('billing_month', month)
+      .neq('status', 'paid');
+    if (error) throw error;
+
+    const studentIds = [...new Set((vouchers ?? []).map((v) => v.student_id))];
+    let studentMap = {};
+    if (studentIds.length) {
+      const { data: students } = await supabase
+        .from('students')
+        .select('id, class_section')
+        .in('id', studentIds);
+      studentMap = Object.fromEntries((students ?? []).map((s) => [s.id, s]));
+    }
+
+    const byClass = {};
+    for (const v of vouchers ?? []) {
+      const balance = Number(v.amount_due) - Number(v.amount_paid);
+      if (balance <= 0.001) continue;
+      if (v.status !== 'overdue' && v.status !== 'partial' && v.status !== 'pending') continue;
+      const cls = studentMap[v.student_id]?.class_section ?? 'Unknown';
+      if (!byClass[cls]) byClass[cls] = { class_section: cls, defaulter_count: 0, balance_due: 0 };
+      byClass[cls].defaulter_count += 1;
+      byClass[cls].balance_due += balance;
+    }
+
+    const rows = Object.values(byClass)
+      .map((r) => ({ ...r, balance_due: Math.round(r.balance_due * 100) / 100 }))
+      .sort((a, b) => a.class_section.localeCompare(b.class_section));
+
+    res.json({ billing_year: year, billing_month: month, classes: rows });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/audit', requireRole('admin'), async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 100, 500);

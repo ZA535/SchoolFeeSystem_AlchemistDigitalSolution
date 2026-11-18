@@ -6,7 +6,7 @@
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Repository** | [github.com/ZA535/SchoolFeeSystem_AlchemistDigitalSolution](https://github.com/ZA535/SchoolFeeSystem_AlchemistDigitalSolution) |
 | **Stack**      | React (Vite) + Express (Node.js) + PostgreSQL ([Supabase](https://supabase.com))                                               |
-| **Status**     | Production-oriented MVP — staff login, roles, audit log; deploy behind HTTPS for internet use                                  |
+| **Status**     | Task 1 ready — staff portal, partial/paid tracking, 3-copy challan, RLS baseline; see [Task 1 vs production](#task-1-submission-vs-production-roadmap) |
 
 ---
 
@@ -29,8 +29,9 @@
 15. [Git, secrets, and `.gitignore`](#git-secrets-and-gitignore)
 16. [Deployment notes](#deployment-notes)
 17. [Troubleshooting](#troubleshooting)
-18. [Roadmap (next)](#roadmap-next)
-19. [License](#license)
+18. [Task 1 submission vs production roadmap](#task-1-submission-vs-production-roadmap)
+19. [Roadmap (next)](#roadmap-next)
+20. [License](#license)
 
 ---
 
@@ -40,33 +41,43 @@
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Dashboard**          | See total expected, collected, pending, and overdue (defaulters) for the current month; generate monthly vouchers in one click |
 | **Students**           | Add, edit, search; fields: name, roll number, class/section, monthly fee, guardian contact                                     |
-| **Fee vouchers**       | List by month; filter by class, status (paid/pending/overdue), unpaid only; challan print                                      |
+| **Fee vouchers**       | List by month; filter by class, status (paid/partial/pending/overdue), unpaid only; challan print                            |
 | **Collect fee**        | Dedicated screen for unpaid vouchers: payment date, method, amount (full or partial), auto receipt number                      |
 | **Receipts**           | Printable receipt per payment (`RCP-YYYYMMDD-####`)                                                                            |
-| **Challans**           | Printable fee challan for unpaid balances                                                                                      |
-| **Partial payments**   | Multiple payments per voucher; status becomes **paid** when total paid ≥ amount due                                            |
-| **Status engine**      | `pending` / `paid` / `overdue` (DB trigger + optional sync)                                                                    |
+| **Challans**           | Printable **A4 three-copy** challan (Bank / School / Student)                                                                  |
+| **Partial payments**   | Multiple payments per voucher; status **partial** when some paid; **paid** when total paid ≥ amount due                          |
+| **Status engine**      | `pending` / `partial` / `paid` / `overdue` (DB trigger + sync RPC)                                                             |
+| **Late fines**         | Admin-configurable flat late fee after due date (migration `004`); waiver via adjustments (no receipt deletion)                |
+| **Adjustments**        | Admin credit/refund/waiver rows in `fee_adjustments` (immutable payment history)                                               |
 | **Staff login**        | JWT sessions; bcrypt passwords; login rate limiting                                                                            |
-| **Roles**              | `admin`, `accountant`, `viewer` (read-only)                                                                                    |
+| **Roles**              | **Admin** (full access) and **Accountant / Cashier** (students, vouchers, payments). Parent portal **out of scope**.             |
 | **Audit trail**        | Payments, students, vouchers, logins (admin can view)                                                                          |
-| **Reports**            | Overdue defaulters, daily collection by payment method                                                                         |
+| **Reports**            | Daily collection, overdue defaulters, **class-wise defaulters**, **monthly revenue vs pending**, audit log (admin)               |
 | **Student deactivate** | Soft-offboard (admin); hidden from default lists                                                                               |
 
 ---
 
 ## Security and roles
 
-| Role           | Permissions                                                            |
-| -------------- | ---------------------------------------------------------------------- |
-| **admin**      | Everything + staff users + audit log + deactivate students             |
-| **accountant** | Students CRUD, vouchers, payments, reports (no user admin)             |
-| **viewer**     | Dashboard, students list, vouchers, reports — **no** payments or edits |
+### Architecture (Task 1)
+
+| Layer | Responsibility |
+| ----- | -------------- |
+| **React client** | No database keys. Staff JWT stored in memory/local session only. |
+| **Express API** | Holds `SUPABASE_SERVICE_ROLE_KEY` (server `.env` only). All business rules enforced here. |
+| **Supabase Postgres** | RLS enabled (migration `004`): `anon` denied; policies prepared for future **Supabase Auth** staff JWT (`app_metadata.role`). |
+
+This matches the senior requirement **“never expose service_role to the client”** while shipping Task 1 on the existing BFF. Full **Supabase Auth + anon client** is documented in the production roadmap below.
+
+| Role | Permissions |
+| ---- | ----------- |
+| **admin** | Fee rules, adjustments/waivers, staff users, audit, deactivate students, all accountant actions |
+| **accountant** | Student lookup, voucher generation, payment collection, core reports |
+| **viewer** | Legacy read-only role in DB only — not offered in staff UI (Task 1: staff-only Admin + Accountant) |
 
 All `/api/*` routes (except `POST /api/auth/login`) require `Authorization: Bearer <token>`.
 
-**Server hardening:** Helmet security headers, JSON body size limit, login rate limit (30 / 15 min).
-
-**You must run** migration `003_auth_audit_production.sql` and create the first admin (`npm run seed:admin`).
+**You must run** migrations `001`, `003`, and **`004_task1_fees_rls.sql`**, then `npm run seed:admin`.
 
 ---
 
@@ -228,6 +239,7 @@ The React app talks to **Express** at `/api` in development, not directly to Sup
 2. Paste contents of `supabase/migrations/001_initial_schema.sql`.
 3. **Run**.
 4. Run `supabase/migrations/003_auth_audit_production.sql` (staff users + audit log).
+5. Run `supabase/migrations/004_task1_fees_rls.sql` (partial status, late fees, RLS, adjustments).
 5. Optional: run `002_reload_schema.sql` if API cannot find `sync_voucher_statuses`.
 
 ### 3. Verify tables
@@ -533,18 +545,44 @@ Set `CLIENT_ORIGIN` to your real frontend URL for CORS.
 | `npm run check:supabase` fails            | Network/DNS/VPN             | Try other network; verify URL in browser                          |
 | `401 Authentication required`             | Not signed in / missing JWT | Add `JWT_SECRET`, run `seed:admin`, sign in at `/login`           |
 | `relation "app_users" does not exist`     | Migration 003 missing       | Run `003_auth_audit_production.sql`                               |
+| `invalid input value for enum payment_status: "partial"` | Migration 004 missing | Run `004_task1_fees_rls.sql`                                      |
 
 After changing `server/.env` or `client/.env`, restart the affected dev process.
 
 ---
 
+## Task 1 submission vs production roadmap
+
+### Delivered for Task 1 (Nov 20 focus)
+
+| Requirement | Status in repo |
+| ----------- | -------------- |
+| No service_role in client; API-only DB access | Done (BFF + server `.env`) |
+| RLS on tables + deny `anon` | Migration `004_task1_fees_rls.sql` |
+| Partial → paid voucher status | `partial` enum + trigger |
+| Printable receipt + **3-copy A4 challan** | Receipt page + updated `ChallanPrint` |
+| Daily collection, defaulters, revenue vs pending | Reports + dashboard metrics |
+| Audit trail | `audit_logs` + `table_name` / `record_id` columns |
+| Late fine (configurable) + waiver path | `school_settings` + `fee_adjustments` API |
+| Parent portal | Out of scope (not built) |
+| Staff roles Admin + Accountant/Cashier | UI + API roles |
+
+### Production roadmap (post–Task 1)
+
+- **Supabase Auth** — replace custom JWT/`app_users` passwords with Supabase Auth; client uses **publishable (anon) key** only; staff `app_metadata.role` drives RLS policies already in `004`.
+- **Hosting** — Vercel (static client + serverless or separate Node API), Supabase managed backups + PITR enabled in project settings.
+- **PDF exports** — server-side PDF for challan/receipt (not only browser print).
+- **Full audit UI** — filters by `table_name`, record drill-down, export.
+- **Fine-grained permissions** — waivers/refunds UI for adjustments without SQL.
+- Parent portal, SMS reminders, multi fee types / academic year.
+
+---
+
 ## Roadmap (next)
 
-- Export reports to Excel/PDF
-- Academic year, multiple fee types, automatic late fines
-- Parent portal / SMS fee reminders
-- Optional Supabase RLS if exposing DB beyond the API
-- CI/CD, staging environment, HTTPS reverse proxy
+- Excel export for reports
+- SMS / parent portal
+- CI/CD to Vercel + production HTTPS
 
 ---
 

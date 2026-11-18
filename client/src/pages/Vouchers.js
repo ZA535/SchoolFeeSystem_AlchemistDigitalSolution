@@ -167,6 +167,7 @@ export default function Vouchers() {
               <option value="">All</option>
               <option value="paid">Paid</option>
               <option value="pending">Pending</option>
+              <option value="partial">Partial</option>
               <option value="overdue">Overdue</option>
             </select>
           </label>

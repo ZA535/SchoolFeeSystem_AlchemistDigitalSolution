@@ -11,9 +11,8 @@ import { useToast } from '../components/ToastProvider.js';
 import ConfirmDialog from '../components/ConfirmDialog.js';
 
 const ROLES = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'accountant', label: 'Accountant' },
-  { value: 'viewer', label: 'Viewer (read-only)' },
+  { value: 'admin', label: 'Admin (full access)' },
+  { value: 'accountant', label: 'Accountant / Cashier' },
 ];
 
 const emptyUserForm = {

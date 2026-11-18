@@ -2,12 +2,15 @@ import { supabase } from '../infrastructure/supabase.client.js';
 
 export async function logAudit(req, { action, entityType, entityId, metadata = {} }) {
   try {
+    const entityIdStr = entityId ? String(entityId) : null;
     const row = {
       user_id: req.user?.sub ?? null,
       user_email: req.user?.email ?? null,
       action,
       entity_type: entityType,
-      entity_id: entityId ? String(entityId) : null,
+      entity_id: entityIdStr,
+      table_name: entityType,
+      record_id: entityIdStr,
       metadata,
       ip_address:
         req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||

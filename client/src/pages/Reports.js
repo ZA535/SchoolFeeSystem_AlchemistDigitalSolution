@@ -7,9 +7,11 @@ import TableSkeleton from '../components/TableSkeleton.js';
 import LoadingPanel from '../components/LoadingPanel.js';
 import TablePagination from '../components/TablePagination.js';
 import { usePagination } from '../hooks/usePagination.js';
+import { useToast } from '../components/ToastProvider.js';
 
 export default function Reports() {
   const { isAdmin } = useAuth();
+  const { toast } = useToast();
   const now = new Date();
   const [year, setYear] = useState(String(now.getFullYear()));
   const [month, setMonth] = useState(String(now.getMonth() + 1));
@@ -21,6 +23,10 @@ export default function Reports() {
   const [defaultersLoading, setDefaultersLoading] = useState(true);
   const [dailyLoading, setDailyLoading] = useState(true);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [monthly, setMonthly] = useState(null);
+  const [byClass, setByClass] = useState(null);
+  const [feeRules, setFeeRules] = useState(null);
+  const [savingRules, setSavingRules] = useState(false);
 
   useEffect(() => {
     setDefaultersLoading(true);
@@ -30,6 +36,14 @@ export default function Reports() {
       .then(setDefaulters)
       .catch((e) => setError(e.message))
       .finally(() => setDefaultersLoading(false));
+    api
+      .getMonthlyRevenueReport({ year, month })
+      .then(setMonthly)
+      .catch(() => setMonthly(null));
+    api
+      .getDefaultersByClass({ year, month })
+      .then(setByClass)
+      .catch(() => setByClass(null));
   }, [year, month]);
 
   useEffect(() => {
@@ -51,6 +65,29 @@ export default function Reports() {
       .finally(() => setAuditLoading(false));
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    api.getFeeRules().then(setFeeRules).catch(() => setFeeRules(null));
+  }, [isAdmin]);
+
+  const saveFeeRules = async (e) => {
+    e.preventDefault();
+    if (!feeRules) return;
+    setSavingRules(true);
+    try {
+      const updated = await api.updateFeeRules({
+        late_fee_flat: Number(feeRules.late_fee_flat),
+        late_fee_enabled: feeRules.late_fee_enabled,
+      });
+      setFeeRules(updated);
+      toast('Fee rules updated.', { type: 'success' });
+    } catch (err) {
+      toast(err.message, { type: 'error' });
+    } finally {
+      setSavingRules(false);
+    }
+  };
+
   const defaulterRows = defaulters?.defaulters ?? [];
   const defaultersPagination = usePagination(defaulterRows, undefined, [year, month]);
   const auditPagination = usePagination(audit);
@@ -59,8 +96,61 @@ export default function Reports() {
     <div className="page">
       <PageHeader
         title="Reports"
-        description="Overdue defaulters, daily collection totals, and admin audit trail"
+        description="Daily collection, class defaulters, monthly revenue vs pending, and audit trail"
       />
+
+      {monthly && (
+        <div className="card card--elevated">
+          <h3 className="card__title">
+            Monthly revenue vs pending — {monthLabel(Number(year), Number(month))}
+          </h3>
+          <div className="metric-grid">
+            <div className="metric metric--success">
+              <div className="label">Collected</div>
+              <div className="value">{formatMoney(monthly.total_revenue)}</div>
+            </div>
+            <div className="metric metric--warning">
+              <div className="label">Pending</div>
+              <div className="value">{formatMoney(monthly.total_pending)}</div>
+            </div>
+            <div className="metric metric--primary">
+              <div className="label">Expected</div>
+              <div className="value">{formatMoney(monthly.total_expected)}</div>
+            </div>
+            <div className="metric metric--primary">
+              <div className="label">Collection rate</div>
+              <div className="value">{monthly.collection_rate_pct}%</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {byClass?.classes?.length > 0 && (
+        <div className="card card--elevated">
+          <h3 className="card__title">Class-wise defaulters</h3>
+          <div className="table-wrap table-wrap--sticky">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Class / Section</th>
+                  <th>Students with balance</th>
+                  <th>Total balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {byClass.classes.map((row) => (
+                  <tr key={row.class_section}>
+                    <td>{row.class_section}</td>
+                    <td>{row.defaulter_count}</td>
+                    <td>{formatMoney(row.balance_due)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div className="card card--elevated">
         {error && <p className="error-banner">{error}</p>}
 
@@ -160,6 +250,43 @@ export default function Reports() {
           </p>
         )}
       </div>
+
+      {isAdmin && feeRules && (
+        <div className="card card--elevated">
+          <h3 className="card__title">Late fee rules (admin)</h3>
+          <p className="card-footnote" style={{ marginTop: 0 }}>
+            Flat late fee is applied once per voucher after due date. Waivers use credit/adjustment
+            entries (no receipt deletion).
+          </p>
+          <form className="form-grid" onSubmit={saveFeeRules}>
+            <label style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                checked={Boolean(feeRules.late_fee_enabled)}
+                onChange={(e) =>
+                  setFeeRules((f) => ({ ...f, late_fee_enabled: e.target.checked }))
+                }
+              />
+              Enable automatic late fee
+            </label>
+            <label>
+              Late fee amount (PKR)
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={feeRules.late_fee_flat}
+                onChange={(e) =>
+                  setFeeRules((f) => ({ ...f, late_fee_flat: e.target.value }))
+                }
+              />
+            </label>
+            <button type="submit" className="btn" disabled={savingRules}>
+              {savingRules ? 'Saving…' : 'Save fee rules'}
+            </button>
+          </form>
+        </div>
+      )}
 
       {isAdmin && (
         <div className="card">

@@ -84,6 +84,17 @@ export const api = {
     return request(`/reports/daily-collection?${q}`);
   },
   getAuditLog: () => request('/reports/audit?limit=80'),
+  getMonthlyRevenueReport: (params) => {
+    const q = new URLSearchParams(params).toString();
+    return request(`/reports/monthly-summary?${q}`);
+  },
+  getDefaultersByClass: (params) => {
+    const q = new URLSearchParams(params).toString();
+    return request(`/reports/defaulters-by-class?${q}`);
+  },
+  getFeeRules: () => request('/settings/fee-rules'),
+  updateFeeRules: (body) =>
+    request('/settings/fee-rules', { method: 'PATCH', body: JSON.stringify(body) }),
   getDashboard: (params) => {
     const q = new URLSearchParams(params).toString();
     return request(`/dashboard/summary?${q}`);

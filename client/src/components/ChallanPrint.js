@@ -1,19 +1,16 @@
 import { formatMoney, monthLabel } from '../api.js';
 
-export default function ChallanPrint({ voucher, schoolName = 'Your School Name' }) {
-  const student = voucher.student;
-  const balance = Number(voucher.amount_due) - Number(voucher.amount_paid);
-
+function ChallanCopy({ title, voucher, schoolName, student, balance }) {
   return (
-    <div className="print-receipt">
-      <h1>{schoolName}</h1>
-      <p style={{ textAlign: 'center', margin: '0 0 1rem' }}>Monthly Fee Challan</p>
+    <div className="challan-copy">
+      <p className="challan-copy__label">{title}</p>
+      <h2 className="challan-copy__school">{schoolName}</h2>
+      <p className="challan-copy__title">Monthly Fee Challan</p>
       <p>
-        <strong>Challan ref:</strong> {voucher.id.slice(0, 8).toUpperCase()}
+        <strong>Ref:</strong> {voucher.id.slice(0, 8).toUpperCase()}
       </p>
       <p>
-        <strong>Billing period:</strong>{' '}
-        {monthLabel(voucher.billing_year, voucher.billing_month)}
+        <strong>Period:</strong> {monthLabel(voucher.billing_year, voucher.billing_month)}
       </p>
       <p>
         <strong>Due date:</strong> {voucher.due_date}
@@ -23,27 +20,59 @@ export default function ChallanPrint({ voucher, schoolName = 'Your School Name' 
         <strong>Student:</strong> {student?.full_name}
       </p>
       <p>
-        <strong>Roll:</strong> {student?.roll_number} · <strong>Class:</strong>{' '}
-        {student?.class_section}
+        <strong>Roll / Class:</strong> {student?.roll_number} · {student?.class_section}
       </p>
       <p>
-        <strong>Guardian contact:</strong> {student?.guardian_contact}
+        <strong>Guardian:</strong> {student?.guardian_contact}
       </p>
-      <hr />
       <p>
-        <strong>Monthly fee:</strong> {formatMoney(voucher.amount_due)}
+        <strong>Fee due:</strong> {formatMoney(voucher.amount_due)}
       </p>
       {Number(voucher.amount_paid) > 0 && (
         <p>
-          <strong>Already paid:</strong> {formatMoney(voucher.amount_paid)}
+          <strong>Paid:</strong> {formatMoney(voucher.amount_paid)}
         </p>
       )}
-      <p style={{ fontSize: '1.1rem' }}>
-        <strong>Amount payable:</strong> {formatMoney(balance)}
+      {Number(voucher.late_fee_applied) > 0 && (
+        <p>
+          <strong>Late fee:</strong> {formatMoney(voucher.late_fee_applied)}
+        </p>
+      )}
+      <p className="challan-copy__amount">
+        <strong>Payable:</strong> {formatMoney(balance)}
       </p>
-      <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#555' }}>
-        Deposit fee at the school office and retain this challan as proof of billing.
-      </p>
+      <p className="challan-copy__footer">Authorized signature: _______________</p>
+    </div>
+  );
+}
+
+export default function ChallanPrint({ voucher, schoolName = 'Your School Name' }) {
+  const student = voucher.student;
+  const balance = Number(voucher.amount_due) - Number(voucher.amount_paid);
+
+  return (
+    <div className="print-challan-a4">
+      <ChallanCopy
+        title="Bank copy"
+        voucher={voucher}
+        schoolName={schoolName}
+        student={student}
+        balance={balance}
+      />
+      <ChallanCopy
+        title="School copy"
+        voucher={voucher}
+        schoolName={schoolName}
+        student={student}
+        balance={balance}
+      />
+      <ChallanCopy
+        title="Student copy"
+        voucher={voucher}
+        schoolName={schoolName}
+        student={student}
+        balance={balance}
+      />
     </div>
   );
 }

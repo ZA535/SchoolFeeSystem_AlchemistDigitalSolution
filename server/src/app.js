@@ -8,6 +8,8 @@ import vouchersRoutes from './modules/vouchers/vouchers.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
 import reportsRoutes from './modules/reports/reports.routes.js';
+import settingsRoutes from './modules/settings/settings.routes.js';
+import adjustmentsRoutes from './modules/adjustments/adjustments.routes.js';
 import { requireAuth } from './middleware/auth.middleware.js';
 import { loginRateLimiter, apiRateLimiter } from './middleware/security.middleware.js';
 import {
@@ -48,6 +50,8 @@ export function createApp() {
   app.use('/api/dashboard', dashboardRoutes);
   app.use('/api/users', usersRoutes);
   app.use('/api/reports', reportsRoutes);
+  app.use('/api/settings', settingsRoutes);
+  app.use('/api/adjustments', adjustmentsRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
