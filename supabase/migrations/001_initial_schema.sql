@@ -1,4 +1,3 @@
--- School Fee Management System — initial schema
 
 CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'overdue');
 CREATE TYPE payment_method AS ENUM ('cash', 'bank_transfer', 'easypaisa_jazzcash');
@@ -64,7 +63,6 @@ CREATE TRIGGER fee_vouchers_updated_at
   BEFORE UPDATE ON fee_vouchers
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- Recompute voucher status from amounts and due date
 CREATE OR REPLACE FUNCTION refresh_voucher_status()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -83,7 +81,6 @@ CREATE TRIGGER fee_vouchers_status_refresh
   BEFORE INSERT OR UPDATE OF amount_paid, amount_due, due_date ON fee_vouchers
   FOR EACH ROW EXECUTE FUNCTION refresh_voucher_status();
 
--- Re-evaluate pending/overdue when calendar date passes (no-op update fires trigger)
 CREATE OR REPLACE FUNCTION sync_voucher_statuses()
 RETURNS void
 LANGUAGE plpgsql

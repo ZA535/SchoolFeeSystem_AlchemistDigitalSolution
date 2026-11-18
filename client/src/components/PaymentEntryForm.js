@@ -1,4 +1,5 @@
-import { PAYMENT_METHODS } from '../constants/paymentMethods.js';
+import { PAYMENT_METHODS } from '../enums/paymentMethods.js';
+import { DialogLabel, FormLabel } from '../enums/labels.js';
 import { formatMoney } from '../api.js';
 
 export default function PaymentEntryForm({
@@ -65,11 +66,11 @@ export default function PaymentEntryForm({
       </label>
       <div className="toolbar">
         <button type="submit" className="btn" disabled={saving}>
-          {saving ? 'Recording…' : 'Record payment'}
+          {saving ? FormLabel.RECORDING : FormLabel.RECORD_PAYMENT}
         </button>
         {onCancel && (
           <button type="button" className="btn secondary" onClick={onCancel}>
-            Cancel
+            {DialogLabel.CANCEL}
           </button>
         )}
       </div>

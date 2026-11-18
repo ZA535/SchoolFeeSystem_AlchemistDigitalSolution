@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
 import { AppError } from '../shared/app-error.js';
+import { ApiMessage } from '../enums/messages.js';
 
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS) || 30000;
 
-/** Attach X-Request-Id for tracing concurrent / slow requests. */
 export function requestIdMiddleware(req, res, next) {
   const incoming = req.headers['x-request-id'];
   const id =
@@ -15,11 +15,10 @@ export function requestIdMiddleware(req, res, next) {
   next();
 }
 
-/** Abort work if handler exceeds timeout (protects server under slow DB). */
 export function requestTimeoutMiddleware(req, res, next) {
   const timer = setTimeout(() => {
     if (!res.headersSent) {
-      next(new AppError('Request timeout', 504));
+      next(new AppError(ApiMessage.REQUEST_TIMEOUT, 504));
     }
   }, REQUEST_TIMEOUT_MS);
 

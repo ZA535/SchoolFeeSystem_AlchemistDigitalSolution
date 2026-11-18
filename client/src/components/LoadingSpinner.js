@@ -1,5 +1,7 @@
+import { LoadingLabel } from '../enums/labels.js';
+
 export default function LoadingSpinner({
-  label = 'Loading…',
+  label = LoadingLabel.DEFAULT,
   size = 'md',
   centered = false,
   className = '',

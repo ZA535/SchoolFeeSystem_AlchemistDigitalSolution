@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { NavLabel } from '../enums/labels.js';
 
 export default function ResponsiveNav({ links, onNavigate }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +19,7 @@ export default function ResponsiveNav({ links, onNavigate }) {
         aria-controls="main-nav-list"
         onClick={() => setOpen((v) => !v)}
       >
-        {open ? 'Close menu' : 'Menu'}
+        {open ? NavLabel.CLOSE_MENU : NavLabel.MENU}
       </button>
       <div id="main-nav-list" className={`nav-links ${open ? 'nav-links--open' : ''}`}>
         {links.map((link) => (

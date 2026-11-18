@@ -1,4 +1,5 @@
 import { formatMoney, monthLabel } from '../api.js';
+import { DefaultAppName } from '../enums/defaults.js';
 
 function ChallanCopy({ title, voucher, schoolName, student, balance }) {
   return (
@@ -47,7 +48,10 @@ function ChallanCopy({ title, voucher, schoolName, student, balance }) {
   );
 }
 
-export default function ChallanPrint({ voucher, schoolName = 'Your School Name' }) {
+export default function ChallanPrint({
+  voucher,
+  schoolName = DefaultAppName.YOUR_SCHOOL_NAME,
+}) {
   const student = voucher.student;
   const balance = Number(voucher.amount_due) - Number(voucher.amount_paid);
 

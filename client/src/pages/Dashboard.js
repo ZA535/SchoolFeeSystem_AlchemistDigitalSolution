@@ -6,6 +6,8 @@ import PageHeader from '../components/PageHeader.js';
 import MetricsSkeleton from '../components/MetricsSkeleton.js';
 import MetricCard from '../components/MetricCard.js';
 import { useToast } from '../components/ToastProvider.js';
+import { monthlyVouchersGenerated } from '../enums/messages.js';
+import { FormLabel } from '../enums/labels.js';
 import WelcomeBanner from '../components/WelcomeBanner.js';
 
 export default function Dashboard() {
@@ -39,7 +41,7 @@ export default function Dashboard() {
     try {
       await api.generateVouchers({ year, month });
       await load({ silent: true });
-      toast(`Monthly vouchers generated for ${monthLabel(year, month)}.`, {
+      toast(monthlyVouchersGenerated(monthLabel(year, month)), {
         type: 'success',
       });
     } catch (e) {
@@ -173,7 +175,7 @@ export default function Dashboard() {
               onClick={generateMonth}
               disabled={generating}
             >
-              {generating ? 'Generating…' : 'Generate monthly vouchers'}
+              {generating ? FormLabel.GENERATING : FormLabel.GENERATE_VOUCHERS}
             </button>
           </div>
         )}

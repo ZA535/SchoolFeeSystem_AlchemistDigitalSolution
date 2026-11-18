@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { supabase } from '../../infrastructure/supabase.client.js';
 import { requireRole } from '../../middleware/auth.middleware.js';
 import { logAudit } from '../../shared/audit.service.js';
+import { ApiMessage } from '../../enums/messages.js';
 
 const router = Router();
 
@@ -41,7 +42,7 @@ router.get('/:id', async (req, res, next) => {
       .eq('id', req.params.id)
       .single();
     if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Student not found' });
+    if (!data) return res.status(404).json({ error: ApiMessage.STUDENT_NOT_FOUND });
     res.json(data);
   } catch (e) {
     next(e);
@@ -58,7 +59,7 @@ router.post('/', requireRole('admin', 'accountant'), async (req, res, next) => {
       .single();
     if (error) {
       if (error.code === '23505') {
-        return res.status(409).json({ error: 'Roll number already exists' });
+        return res.status(409).json({ error: ApiMessage.ROLL_NUMBER_EXISTS });
       }
       throw error;
     }
@@ -87,7 +88,7 @@ router.put('/:id', requireRole('admin', 'accountant'), async (req, res, next) =>
       .select()
       .single();
     if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Student not found' });
+    if (!data) return res.status(404).json({ error: ApiMessage.STUDENT_NOT_FOUND });
     await logAudit(req, {
       action: 'student.update',
       entityType: 'student',

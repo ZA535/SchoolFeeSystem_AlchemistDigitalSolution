@@ -1,11 +1,12 @@
 import rateLimit from 'express-rate-limit';
+import { ApiMessage } from '../enums/messages.js';
 
 export const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts. Try again later.' },
+  message: { error: ApiMessage.TOO_MANY_LOGIN_ATTEMPTS },
 });
 
 export const apiRateLimiter = rateLimit({
@@ -13,5 +14,5 @@ export const apiRateLimiter = rateLimit({
   max: Number(process.env.API_RATE_LIMIT_PER_MIN) || 300,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests. Please slow down.' },
+  message: { error: ApiMessage.TOO_MANY_REQUESTS },
 });

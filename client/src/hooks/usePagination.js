@@ -6,11 +6,11 @@ export function usePagination(items, pageSize = PAGE_SIZE, resetDeps = []) {
   const totalItems = items.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize) || 1);
 
+  const resetKey = JSON.stringify(resetDeps);
+
   useEffect(() => {
     setPage(1);
-    // Reset to page 1 when filters / data source identity changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, resetDeps);
+  }, [resetKey]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);

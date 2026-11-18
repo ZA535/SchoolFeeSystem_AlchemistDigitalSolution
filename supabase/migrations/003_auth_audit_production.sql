@@ -1,4 +1,3 @@
--- Production: staff users, roles, audit trail, student active flag
 
 CREATE TYPE app_user_role AS ENUM ('admin', 'accountant', 'viewer');
 

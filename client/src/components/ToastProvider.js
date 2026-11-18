@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState } from 'react';
+import { ClientErrorMessage } from '../enums/messages.js';
 
 const ToastContext = createContext(null);
 
@@ -67,7 +68,7 @@ export function ToastProvider({ children }) {
 export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) {
-    throw new Error('useToast must be used within ToastProvider');
+    throw new Error(ClientErrorMessage.USE_TOAST_OUTSIDE_PROVIDER);
   }
   return ctx;
 }

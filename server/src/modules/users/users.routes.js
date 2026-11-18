@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { supabase } from '../../infrastructure/supabase.client.js';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware.js';
 import { logAudit } from '../../shared/audit.service.js';
+import { ApiMessage } from '../../enums/messages.js';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ router.post('/', async (req, res, next) => {
       .single();
     if (error) {
       if (error.code === '23505') {
-        return res.status(409).json({ error: 'Email already in use' });
+        return res.status(409).json({ error: ApiMessage.EMAIL_ALREADY_IN_USE });
       }
       throw error;
     }

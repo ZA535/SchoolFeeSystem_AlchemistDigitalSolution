@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import ChallanPrint from '../components/ChallanPrint.js';
 import LoadingPanel from '../components/LoadingPanel.js';
+import { DefaultAppName } from '../enums/defaults.js';
 
 export default function ChallanPage() {
   const { id } = useParams();
@@ -34,7 +35,9 @@ export default function ChallanPage() {
       {voucher && (
         <ChallanPrint
           voucher={voucher}
-          schoolName={import.meta.env.VITE_SCHOOL_NAME || 'Your School Name'}
+          schoolName={
+            import.meta.env.VITE_SCHOOL_NAME || DefaultAppName.YOUR_SCHOOL_NAME
+          }
         />
       )}
       {loading && !error && <LoadingPanel label="Loading challan…" minHeight="14rem" />}

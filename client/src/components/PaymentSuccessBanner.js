@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatMoney, monthLabel } from '../api.js';
-import { paymentMethodLabel } from '../constants/paymentMethods.js';
+import { paymentMethodLabel } from '../enums/paymentMethods.js';
 
 export default function PaymentSuccessBanner({ result, onDismiss }) {
   if (!result) return null;

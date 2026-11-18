@@ -1,6 +1,11 @@
 import LoadingSpinner from './LoadingSpinner.js';
 
-export default function LoadingPanel({ label = 'Loading data…', minHeight = '12rem' }) {
+import { LoadingLabel } from '../enums/labels.js';
+
+export default function LoadingPanel({
+  label = LoadingLabel.DATA,
+  minHeight = '12rem',
+}) {
   return (
     <div
       className="loader-panel"

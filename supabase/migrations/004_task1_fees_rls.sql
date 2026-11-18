@@ -1,4 +1,3 @@
--- Task 1: partial status, late fees, adjustments, audit fields, RLS baseline
 
 DO $$
 BEGIN
@@ -103,7 +102,6 @@ BEGIN
 END;
 $$;
 
--- RLS: block direct anon access; API uses service role server-side only.
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fee_vouchers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
@@ -133,7 +131,6 @@ CREATE POLICY school_settings_deny_anon ON school_settings FOR ALL TO anon USING
 DROP POLICY IF EXISTS fee_adjustments_deny_anon ON fee_adjustments;
 CREATE POLICY fee_adjustments_deny_anon ON fee_adjustments FOR ALL TO anon USING (false) WITH CHECK (false);
 
--- Authenticated Supabase Auth staff (future): read/write when JWT app_metadata.role is set.
 DROP POLICY IF EXISTS students_staff_auth ON students;
 CREATE POLICY students_staff_auth ON students FOR ALL TO authenticated
   USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'accountant'))

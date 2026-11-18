@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.js';
+import { DefaultAppName } from '../enums/defaults.js';
+import { FormLabel } from '../enums/labels.js';
 
-const schoolName = import.meta.env.VITE_SCHOOL_NAME || 'School Fee Management';
+const schoolName =
+  import.meta.env.VITE_SCHOOL_NAME || DefaultAppName.SCHOOL_FEE_MANAGEMENT;
 
 export default function Login() {
   const { login } = useAuth();
@@ -72,10 +75,10 @@ export default function Login() {
               {saving ? (
                 <>
                   <span className="spinner spinner--btn" aria-hidden />
-                  Signing in…
+                  {FormLabel.SIGNING_IN}
                 </>
               ) : (
-                'Sign in'
+                FormLabel.SIGN_IN
               )}
             </button>
           </form>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, formatMoney, monthLabel } from '../api.js';
-import { paymentMethodLabel } from '../constants/paymentMethods.js';
+import { paymentMethodLabel } from '../enums/paymentMethods.js';
+import { feeCollectionPaidFull, feeCollectionPaidPartial } from '../enums/messages.js';
 import PaymentEntryForm from '../components/PaymentEntryForm.js';
 import PaymentSuccessBanner from '../components/PaymentSuccessBanner.js';
 import PageHeader from '../components/PageHeader.js';
@@ -91,8 +92,8 @@ export default function FeeCollection() {
       await load({ silent: true });
       toast(
         voucher.status === 'paid'
-          ? `Payment recorded — voucher fully paid (receipt ${payment.receipt_number}).`
-          : `Partial payment saved — receipt ${payment.receipt_number}.`,
+          ? feeCollectionPaidFull(payment.receipt_number)
+          : feeCollectionPaidPartial(payment.receipt_number),
         { type: 'success' }
       );
     } catch (err) {

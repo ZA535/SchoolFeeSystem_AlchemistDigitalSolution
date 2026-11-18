@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { supabase } from '../../infrastructure/supabase.client.js';
 import { logAudit } from '../../shared/audit.service.js';
 import { requireAuth, signToken } from '../../middleware/auth.middleware.js';
+import { ApiMessage } from '../../enums/messages.js';
 
 const router = Router();
 
@@ -23,11 +24,11 @@ router.post('/login', async (req, res, next) => {
 
     if (error) throw error;
     if (!user?.is_active) {
-      return res.status(401).json({ error: 'Account is disabled' });
+      return res.status(401).json({ error: ApiMessage.ACCOUNT_DISABLED });
     }
     const ok = user && (await bcrypt.compare(password, user.password_hash));
     if (!ok) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: ApiMessage.INVALID_EMAIL_OR_PASSWORD });
     }
 
     await supabase
@@ -53,7 +54,7 @@ router.post('/login', async (req, res, next) => {
     res.json({ token, user: profile });
   } catch (e) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid login payload' });
+      return res.status(400).json({ error: ApiMessage.INVALID_LOGIN_PAYLOAD });
     }
     next(e);
   }
@@ -68,7 +69,7 @@ router.get('/me', requireAuth, async (req, res, next) => {
       .single();
     if (error) throw error;
     if (!user?.is_active) {
-      return res.status(401).json({ error: 'Account is disabled' });
+      return res.status(401).json({ error: ApiMessage.ACCOUNT_DISABLED });
     }
     res.json({ user });
   } catch (e) {

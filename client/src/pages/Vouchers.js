@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, formatMoney, monthLabel } from '../api.js';
-import { paymentMethodLabel } from '../constants/paymentMethods.js';
+import { paymentMethodLabel } from '../enums/paymentMethods.js';
+import { vouchersPaidFull, vouchersPaymentRecorded } from '../enums/messages.js';
 import PaymentEntryForm from '../components/PaymentEntryForm.js';
 import PaymentSuccessBanner from '../components/PaymentSuccessBanner.js';
 import { useAuth } from '../auth/AuthContext.js';
@@ -99,8 +100,8 @@ export default function Vouchers() {
       await load({ silent: true });
       toast(
         voucher.status === 'paid'
-          ? `Payment recorded — voucher marked paid (receipt ${payment.receipt_number}).`
-          : `Payment recorded — receipt ${payment.receipt_number}.`,
+          ? vouchersPaidFull(payment.receipt_number)
+          : vouchersPaymentRecorded(payment.receipt_number),
         { type: 'success' }
       );
     } catch (err) {

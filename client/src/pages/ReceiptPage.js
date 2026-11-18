@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import ReceiptPrint from '../components/ReceiptPrint.js';
 import LoadingPanel from '../components/LoadingPanel.js';
+import { DefaultAppName } from '../enums/defaults.js';
 
 export default function ReceiptPage() {
   const { id } = useParams();
@@ -42,7 +43,9 @@ export default function ReceiptPage() {
         <ReceiptPrint
           voucher={voucher}
           payment={payment}
-          schoolName={import.meta.env.VITE_SCHOOL_NAME || 'Your School Name'}
+          schoolName={
+            import.meta.env.VITE_SCHOOL_NAME || DefaultAppName.YOUR_SCHOOL_NAME
+          }
         />
       )}
       {loading && !error && <LoadingPanel label="Loading receipt…" minHeight="14rem" />}

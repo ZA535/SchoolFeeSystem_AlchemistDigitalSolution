@@ -5,6 +5,7 @@ import { currentBillingPeriod, defaultDueDate } from '../../shared/voucher.util.
 import { syncVoucherStatuses } from '../../shared/voucher-status.service.js';
 import { assertSupabaseOk, assertSupabaseRow } from '../../shared/supabase-errors.js';
 import { AppError } from '../../shared/app-error.js';
+import { ApiMessage, paymentExceedsBalance } from '../../enums/messages.js';
 
 async function fetchStudentsForVouchers(studentIds) {
   if (!studentIds.length) return {};
@@ -118,7 +119,7 @@ export async function getVoucherById(voucherId) {
     'voucher detail'
   );
   assertSupabaseOk(error);
-  return assertSupabaseRow(data, 'Voucher not found');
+  return assertSupabaseRow(data, ApiMessage.VOUCHER_NOT_FOUND);
 }
 
 export async function generateMonthlyVouchers({ year, month } = {}) {
@@ -179,14 +180,11 @@ export async function recordVoucherPayment(voucherId, body, recordedByUserId) {
     'voucher for payment'
   );
   assertSupabaseOk(voucherResult.error);
-  const voucher = assertSupabaseRow(voucherResult.data, 'Voucher not found');
+  const voucher = assertSupabaseRow(voucherResult.data, ApiMessage.VOUCHER_NOT_FOUND);
 
   const balance = Number(voucher.amount_due) - Number(voucher.amount_paid);
   if (body.amount > balance + 0.001) {
-    throw new AppError(
-      `Payment exceeds remaining balance (${balance.toFixed(2)})`,
-      400
-    );
+    throw new AppError(paymentExceedsBalance(balance), 400);
   }
 
   const receipt_number = generateReceiptNumber();

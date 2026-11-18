@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
-// Fixes many "fetch failed" errors on macOS when IPv6 is broken but IPv4 works.
 dns.setDefaultResultOrder('ipv4first');
 
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

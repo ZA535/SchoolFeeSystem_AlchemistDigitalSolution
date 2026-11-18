@@ -1,9 +1,11 @@
+import { DialogLabel, LoadingLabel } from '../enums/labels.js';
+
 export default function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = DialogLabel.CONFIRM,
+  cancelLabel = DialogLabel.CANCEL,
   danger = false,
   busy = false,
   onConfirm,
@@ -42,7 +44,7 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             disabled={busy}
           >
-            {busy ? 'Please wait…' : confirmLabel}
+            {busy ? LoadingLabel.PLEASE_WAIT : confirmLabel}
           </button>
         </div>
       </div>

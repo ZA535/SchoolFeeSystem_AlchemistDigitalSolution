@@ -14,29 +14,34 @@ import AppSidebar from './components/AppSidebar.js';
 import NetworkBanner from './components/NetworkBanner.js';
 import AppFooter from './components/AppFooter.js';
 import { useAuth } from './auth/AuthContext.js';
+import { DefaultAppName } from './enums/defaults.js';
+import { NavLabel, RoleLabel } from './enums/labels.js';
 
-const schoolName = import.meta.env.VITE_SCHOOL_NAME || 'School Fee Management';
+const schoolName =
+  import.meta.env.VITE_SCHOOL_NAME || DefaultAppName.SCHOOL_FEE_MANAGEMENT;
 
 function AppShell() {
   const { user, logout, canCollect, isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
-    { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
-    { to: '/students', label: 'Students', icon: 'students' },
-    ...(canCollect ? [{ to: '/collect', label: 'Collect fee', icon: 'collect' }] : []),
-    { to: '/vouchers', label: 'Fee vouchers', icon: 'vouchers' },
-    { to: '/reports', label: 'Reports', icon: 'reports' },
-    ...(isAdmin ? [{ to: '/users', label: 'Staff', icon: 'staff' }] : []),
+    { to: '/', label: NavLabel.DASHBOARD, icon: 'dashboard', end: true },
+    { to: '/students', label: NavLabel.STUDENTS, icon: 'students' },
+    ...(canCollect
+      ? [{ to: '/collect', label: NavLabel.COLLECT_FEE, icon: 'collect' }]
+      : []),
+    { to: '/vouchers', label: NavLabel.FEE_VOUCHERS, icon: 'vouchers' },
+    { to: '/reports', label: NavLabel.REPORTS, icon: 'reports' },
+    ...(isAdmin ? [{ to: '/users', label: NavLabel.STAFF, icon: 'staff' }] : []),
   ];
 
   const roleLabel =
     user?.role === 'admin'
-      ? 'Administrator'
+      ? RoleLabel.ADMINISTRATOR
       : user?.role === 'accountant'
-        ? 'Accountant'
+        ? RoleLabel.ACCOUNTANT
         : user?.role === 'viewer'
-          ? 'Viewer'
+          ? RoleLabel.VIEWER
           : user?.role;
 
   return (

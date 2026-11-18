@@ -1,15 +1,12 @@
 import { formatMoney, monthLabel } from '../api.js';
-
-const METHOD_LABELS = {
-  cash: 'Cash',
-  bank_transfer: 'Bank Transfer',
-  easypaisa_jazzcash: 'EasyPaisa / JazzCash',
-};
+import { DefaultAppName } from '../enums/defaults.js';
+import { ReceiptLabel } from '../enums/labels.js';
+import { paymentMethodLabel } from '../enums/paymentMethods.js';
 
 export default function ReceiptPrint({
   voucher,
   payment,
-  schoolName = 'Your School Name',
+  schoolName = DefaultAppName.YOUR_SCHOOL_NAME,
 }) {
   const student = voucher.student;
   const remaining = Number(voucher.amount_due) - Number(voucher.amount_paid);
@@ -17,7 +14,9 @@ export default function ReceiptPrint({
   return (
     <div className="print-receipt">
       <h1>{schoolName}</h1>
-      <p style={{ textAlign: 'center', margin: '0 0 1rem' }}>Fee Payment Receipt</p>
+      <p style={{ textAlign: 'center', margin: '0 0 1rem' }}>
+        {ReceiptLabel.FEE_PAYMENT_RECEIPT}
+      </p>
       <p>
         <strong>Receipt #:</strong> {payment?.receipt_number || voucher.receipt_number}
       </p>
@@ -45,8 +44,7 @@ export default function ReceiptPrint({
             {formatMoney(payment.amount)}
           </p>
           <p>
-            <strong>Method:</strong>{' '}
-            {METHOD_LABELS[payment.payment_method] || payment.payment_method}
+            <strong>Method:</strong> {paymentMethodLabel(payment.payment_method)}
           </p>
         </>
       ) : null}

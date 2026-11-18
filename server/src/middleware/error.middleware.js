@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { AppError } from '../shared/app-error.js';
+import { ApiMessage } from '../enums/messages.js';
 
 export function notFoundHandler(_req, res) {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: ApiMessage.NOT_FOUND });
 }
 
 export function errorHandler(err, req, res, _next) {
@@ -14,7 +15,7 @@ export function errorHandler(err, req, res, _next) {
     console.error(err);
   }
   const body = {
-    error: err.message || 'Internal server error',
+    error: err.message || ApiMessage.INTERNAL_SERVER_ERROR,
     requestId: req.requestId,
   };
   if (process.env.NODE_ENV !== 'production' && err.details) {

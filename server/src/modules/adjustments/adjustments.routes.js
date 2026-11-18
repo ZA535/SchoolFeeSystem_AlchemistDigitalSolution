@@ -4,6 +4,7 @@ import { supabase } from '../../infrastructure/supabase.client.js';
 import { requireRole } from '../../middleware/auth.middleware.js';
 import { logAudit } from '../../shared/audit.service.js';
 import { asyncHandler } from '../../middleware/async.middleware.js';
+import { ApiMessage } from '../../enums/messages.js';
 
 const router = Router();
 
@@ -49,7 +50,7 @@ router.post(
     } else if (body.adjustment_type === 'credit' || body.adjustment_type === 'refund') {
       const credit = Math.min(Number(body.amount), Number(voucher.amount_paid));
       if (credit <= 0) {
-        return res.status(400).json({ error: 'No collected amount to credit' });
+        return res.status(400).json({ error: ApiMessage.NO_COLLECTED_AMOUNT });
       }
       const newPaid = Math.max(0, Number(voucher.amount_paid) - credit);
       await supabase

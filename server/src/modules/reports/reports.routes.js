@@ -3,6 +3,7 @@ import { supabase } from '../../infrastructure/supabase.client.js';
 import { syncVoucherStatuses } from '../../shared/voucher-status.service.js';
 import { currentBillingPeriod } from '../../shared/voucher.util.js';
 import { requireRole } from '../../middleware/auth.middleware.js';
+import { ApiMessage } from '../../enums/messages.js';
 
 const router = Router();
 
@@ -145,7 +146,7 @@ router.get('/defaulters-by-class', async (req, res, next) => {
       if (balance <= 0.001) continue;
       if (v.status !== 'overdue' && v.status !== 'partial' && v.status !== 'pending')
         continue;
-      const cls = studentMap[v.student_id]?.class_section ?? 'Unknown';
+      const cls = studentMap[v.student_id]?.class_section ?? ApiMessage.UNKNOWN_CLASS;
       if (!byClass[cls])
         byClass[cls] = { class_section: cls, defaulter_count: 0, balance_due: 0 };
       byClass[cls].defaulter_count += 1;

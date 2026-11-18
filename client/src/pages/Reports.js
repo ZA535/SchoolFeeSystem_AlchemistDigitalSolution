@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api, formatMoney, monthLabel } from '../api.js';
-import { paymentMethodLabel } from '../constants/paymentMethods.js';
+import { paymentMethodLabel } from '../enums/paymentMethods.js';
+import { ToastMessage } from '../enums/messages.js';
+import { FormLabel } from '../enums/labels.js';
 import { useAuth } from '../auth/AuthContext.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
@@ -83,7 +85,7 @@ export default function Reports() {
         late_fee_enabled: feeRules.late_fee_enabled,
       });
       setFeeRules(updated);
-      toast('Fee rules updated.', { type: 'success' });
+      toast(ToastMessage.FEE_RULES_UPDATED, { type: 'success' });
     } catch (err) {
       toast(err.message, { type: 'error' });
     } finally {
@@ -287,7 +289,7 @@ export default function Reports() {
               />
             </label>
             <button type="submit" className="btn" disabled={savingRules}>
-              {savingRules ? 'Saving…' : 'Save fee rules'}
+              {savingRules ? FormLabel.SAVING : FormLabel.SAVE_FEE_RULES}
             </button>
           </form>
         </div>

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { api, setAuthToken, setOnUnauthorized } from '../api.js';
+import { ClientErrorMessage } from '../enums/messages.js';
 
 const AuthContext = createContext(null);
 
@@ -57,6 +58,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth requires AuthProvider');
+  if (!ctx) throw new Error(ClientErrorMessage.USE_AUTH_OUTSIDE_PROVIDER);
   return ctx;
 }

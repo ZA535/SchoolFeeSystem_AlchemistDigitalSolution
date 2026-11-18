@@ -9,11 +9,15 @@ import TablePagination from '../components/TablePagination.js';
 import { usePagination } from '../hooks/usePagination.js';
 import { useToast } from '../components/ToastProvider.js';
 import ConfirmDialog from '../components/ConfirmDialog.js';
-
-const ROLES = [
-  { value: 'admin', label: 'Admin (full access)' },
-  { value: 'accountant', label: 'Accountant / Cashier' },
-];
+import { ToastMessage } from '../enums/messages.js';
+import {
+  DialogLabel,
+  StaffDialog,
+  STAFF_ROLE_OPTIONS,
+  disableStaffMessage,
+  enableStaffMessage,
+  FormLabel,
+} from '../enums/labels.js';
 
 const emptyUserForm = {
   email: '',
@@ -45,6 +49,8 @@ export default function Users() {
       .finally(() => setListLoading(false));
   };
 
+  const pagination = usePagination(users);
+
   useEffect(() => {
     if (isAdmin) load();
   }, [isAdmin]);
@@ -71,7 +77,7 @@ export default function Users() {
     setFormError('');
     try {
       await api.createUser(form);
-      toast('Staff member added successfully.', { type: 'success' });
+      toast(ToastMessage.STAFF_ADDED, { type: 'success' });
       closeForm();
       await load({ silent: true });
     } catch (err) {
@@ -82,15 +88,13 @@ export default function Users() {
     }
   };
 
-  const pagination = usePagination(users);
-
   const runToggleActive = async () => {
     if (!confirmToggle) return;
     const u = confirmToggle;
     setToggling(true);
     try {
       await api.updateUser(u.id, { is_active: !u.is_active });
-      toast(u.is_active ? 'Staff account disabled.' : 'Staff account enabled.', {
+      toast(u.is_active ? ToastMessage.STAFF_DISABLED : ToastMessage.STAFF_ENABLED, {
         type: 'info',
       });
       setConfirmToggle(null);
@@ -156,7 +160,7 @@ export default function Users() {
               value={form.role}
               onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
             >
-              {ROLES.map((r) => (
+              {STAFF_ROLE_OPTIONS.map((r) => (
                 <option key={r.value} value={r.value}>
                   {r.label}
                 </option>
@@ -165,7 +169,7 @@ export default function Users() {
           </label>
           <div className="toolbar">
             <button type="submit" className="btn" disabled={saving}>
-              {saving ? 'Saving…' : 'Save user'}
+              {saving ? FormLabel.SAVING : FormLabel.SAVE_USER}
             </button>
             <button type="button" className="btn secondary" onClick={closeForm}>
               Cancel
@@ -237,16 +241,20 @@ export default function Users() {
       <ConfirmDialog
         open={Boolean(confirmToggle)}
         title={
-          confirmToggle?.is_active ? 'Disable staff account?' : 'Enable staff account?'
+          confirmToggle?.is_active
+            ? StaffDialog.DISABLE_TITLE
+            : StaffDialog.ENABLE_TITLE
         }
         message={
           confirmToggle
             ? confirmToggle.is_active
-              ? `${confirmToggle.full_name} will not be able to sign in.`
-              : `${confirmToggle.full_name} can sign in again with their existing password.`
+              ? disableStaffMessage(confirmToggle.full_name)
+              : enableStaffMessage(confirmToggle.full_name)
             : ''
         }
-        confirmLabel={confirmToggle?.is_active ? 'Disable' : 'Enable'}
+        confirmLabel={
+          confirmToggle?.is_active ? DialogLabel.DISABLE : DialogLabel.ENABLE
+        }
         danger={Boolean(confirmToggle?.is_active)}
         busy={toggling}
         onConfirm={runToggleActive}

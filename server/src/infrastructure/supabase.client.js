@@ -1,20 +1,19 @@
 import '../config/loadEnv.js';
 import { createClient } from '@supabase/supabase-js';
 import ws from 'ws';
+import { InfraMessage, supabaseRequestFailed } from '../enums/messages.js';
 
 let url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
 if (!url || !key) {
-  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in server/.env');
+  throw new Error(InfraMessage.MISSING_SUPABASE_ENV);
 }
 
 url = url.replace(/\/+$/, '');
 
 if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) {
-  console.warn(
-    '[supabase] SUPABASE_URL should look like https://YOUR_REF.supabase.co — copy from Supabase Dashboard → Settings → General → Project URL'
-  );
+  console.warn(InfraMessage.SUPABASE_URL_FORMAT_HINT);
 }
 
 async function supabaseFetch(input, init) {
@@ -24,13 +23,11 @@ async function supabaseFetch(input, init) {
     const code = err.cause?.code || err.code;
     const hint =
       code === 'ENOTFOUND'
-        ? 'Host not found. Open Supabase → Settings → General and copy Project URL exactly into server/.env.'
+        ? InfraMessage.HOST_NOT_FOUND
         : code === 'ECONNREFUSED' || code === 'ETIMEDOUT'
-          ? 'Connection blocked or offline. Check internet, VPN, or firewall.'
-          : 'Check SUPABASE_URL, internet connection, and VPN.';
-    const wrapped = new Error(
-      `Supabase request failed (${code || 'network'}): ${hint}`
-    );
+          ? InfraMessage.CONNECTION_BLOCKED
+          : InfraMessage.SUPABASE_GENERIC_HINT;
+    const wrapped = new Error(supabaseRequestFailed(code, hint));
     wrapped.cause = err;
     throw wrapped;
   }

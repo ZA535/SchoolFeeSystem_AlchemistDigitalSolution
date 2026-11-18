@@ -68,7 +68,6 @@ select {
   padding: 0;
 }
 
-/* Brand */
 .brand {
   display: flex;
   align-items: center;
@@ -792,7 +791,6 @@ th {
   }
 }
 
-/* Login */
 .login-scene {
   min-height: 100vh;
   display: grid;
@@ -902,7 +900,6 @@ th {
   padding: 1.5rem;
 }
 
-/* Legacy nav (unused) */
 .nav {
   display: flex;
   gap: 0.5rem;
@@ -924,7 +921,6 @@ th {
   color: #fff;
 }
 
-/* Print receipt */
 .print-challan-a4 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1111,7 +1107,6 @@ th {
   margin: 0;
 }
 
-/* Tablet */
 @media (max-width: 1024px) {
   .grid-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1130,7 +1125,6 @@ th {
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .app-shell {
     padding: 0.75rem 0.65rem 2.5rem;
@@ -1219,7 +1213,6 @@ th {
   }
 }
 
-/* ——— Premium shell (sidebar layout) ——— */
 .app-frame {
   min-height: 100vh;
   display: block;
@@ -1824,7 +1817,6 @@ th {
   }
 }
 
-/* ——— UX polish ——— */
 .welcome-banner {
   display: flex;
   align-items: center;

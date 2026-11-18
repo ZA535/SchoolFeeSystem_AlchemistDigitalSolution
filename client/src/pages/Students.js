@@ -10,6 +10,8 @@ import { useToast } from '../components/ToastProvider.js';
 import EmptyState from '../components/EmptyState.js';
 import ConfirmDialog from '../components/ConfirmDialog.js';
 import FilterChips from '../components/FilterChips.js';
+import { ToastMessage } from '../enums/messages.js';
+import { EmptyStateLabel, FormLabel } from '../enums/labels.js';
 
 const emptyForm = {
   full_name: '',
@@ -91,10 +93,10 @@ export default function Students() {
     try {
       if (editingId) {
         await api.updateStudent(editingId, payload);
-        toast('Student updated successfully.', { type: 'success' });
+        toast(ToastMessage.STUDENT_UPDATED, { type: 'success' });
       } else {
         await api.createStudent(payload);
-        toast('Student added successfully.', { type: 'success' });
+        toast(ToastMessage.STUDENT_ADDED, { type: 'success' });
       }
       closeForm();
       await load({ silent: true });
@@ -115,7 +117,7 @@ export default function Students() {
     setDeactivating(true);
     try {
       await api.deactivateStudent(confirmDeactivate.id);
-      toast('Student deactivated.', { type: 'info' });
+      toast(ToastMessage.STUDENT_DEACTIVATED, { type: 'info' });
       setConfirmDeactivate(null);
       await load({ silent: true });
     } catch (err) {
@@ -141,7 +143,7 @@ export default function Students() {
       {canWrite && (
         <InlineFormCard
           open={showForm}
-          title={editingId ? 'Edit student' : 'Add student'}
+          title={editingId ? FormLabel.EDIT_STUDENT : FormLabel.ADD_STUDENT}
           onClose={closeForm}
           error={formError}
         >
@@ -197,7 +199,11 @@ export default function Students() {
             </label>
             <div className="toolbar">
               <button type="submit" className="btn" disabled={saving}>
-                {saving ? 'Saving…' : editingId ? 'Update student' : 'Save student'}
+                {saving
+                  ? FormLabel.SAVING
+                  : editingId
+                    ? FormLabel.UPDATE_STUDENT
+                    : FormLabel.SAVE_STUDENT}
               </button>
               <button type="button" className="btn secondary" onClick={closeForm}>
                 Cancel
@@ -253,16 +259,16 @@ export default function Students() {
             <TableSkeleton rows={7} columns={6} />
           ) : students.length === 0 ? (
             <EmptyState
-              title="No students found"
+              title={EmptyStateLabel.NO_STUDENTS_TITLE}
               description={
                 search || filterClass
-                  ? 'Try adjusting your search or class filter.'
-                  : 'Enroll your first student to start collecting fees.'
+                  ? EmptyStateLabel.NO_STUDENTS_FILTERED
+                  : EmptyStateLabel.NO_STUDENTS_EMPTY
               }
               action={
                 canWrite && !search && !filterClass ? (
                   <button type="button" className="btn" onClick={openAddForm}>
-                    Add student
+                    {EmptyStateLabel.ADD_STUDENT}
                   </button>
                 ) : null
               }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { NetworkMessage } from '../enums/messages.js';
 
 export default function NetworkBanner() {
   const [offline, setOffline] = useState(!navigator.onLine);
@@ -32,9 +33,7 @@ export default function NetworkBanner() {
       className={`network-banner ${offline ? 'network-banner--error' : ''}`}
       role="status"
     >
-      {offline
-        ? 'You are offline. Reconnect to save fee payments.'
-        : 'Slow connection detected. Requests may take longer.'}
+      {offline ? NetworkMessage.OFFLINE : NetworkMessage.SLOW_CONNECTION}
     </div>
   );
 }

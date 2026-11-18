@@ -1,3 +1,5 @@
+import { ClientErrorMessage, apiErrorWithRef } from './enums/messages.js';
+
 const BASE = '/api';
 const DEFAULT_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS) || 60000;
 const MAX_RETRIES = 1;
@@ -20,7 +22,7 @@ async function fetchWithTimeout(url, options, timeoutMs = DEFAULT_TIMEOUT_MS) {
     return await fetch(url, { ...options, signal: controller.signal });
   } catch (err) {
     if (err.name === 'AbortError') {
-      throw new Error('Request timed out. Check your connection and try again.');
+      throw new Error(ClientErrorMessage.REQUEST_TIMED_OUT);
     }
     throw err;
   } finally {
@@ -55,9 +57,8 @@ async function request(path, options = {}, attempt = 0) {
     const base =
       typeof data.error === 'string'
         ? data.error
-        : data.error?.message || 'Request failed';
-    const suffix = requestId ? ` (ref: ${requestId.slice(0, 8)})` : '';
-    throw new Error(base + suffix);
+        : data.error?.message || ClientErrorMessage.REQUEST_FAILED;
+    throw new Error(apiErrorWithRef(base, requestId));
   }
 
   return data;
