@@ -3,6 +3,7 @@ import { api, formatMoney } from '../api.js';
 import { useAuth } from '../auth/AuthContext.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
+import InlineFormCard from '../components/InlineFormCard.js';
 
 const emptyForm = {
   full_name: '',
@@ -17,19 +18,21 @@ export default function Students() {
   const [students, setStudents] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [filterClass, setFilterClass] = useState('');
   const [search, setSearch] = useState('');
-  const [error, setError] = useState('');
+  const [listError, setListError] = useState('');
+  const [formError, setFormError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const load = ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
-    setError('');
+    setListError('');
     return api
       .getStudents({ class_section: filterClass || undefined, q: search || undefined })
       .then(setStudents)
-      .catch((e) => setError(e.message))
+      .catch((e) => setListError(e.message))
       .finally(() => setLoading(false));
   };
 
@@ -41,6 +44,20 @@ export default function Students() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormError('');
+  };
+
+  const openAddForm = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormError('');
+    setFormOpen(true);
+  };
+
   const startEdit = (s) => {
     setEditingId(s.id);
     setForm({
@@ -50,17 +67,14 @@ export default function Students() {
       monthly_fee: String(s.monthly_fee),
       guardian_contact: s.guardian_contact,
     });
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setForm(emptyForm);
+    setFormError('');
+    setFormOpen(true);
   };
 
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setError('');
+    setFormError('');
     const payload = {
       ...form,
       monthly_fee: Number(form.monthly_fee),
@@ -71,27 +85,38 @@ export default function Students() {
       } else {
         await api.createStudent(payload);
       }
-      cancelEdit();
+      closeForm();
       await load({ silent: true });
     } catch (err) {
-      setError(err.message);
+      setFormError(err.message);
     } finally {
       setSaving(false);
     }
   };
 
   const classOptions = [...new Set(students.map((s) => s.class_section))].sort();
+  const showForm = formOpen;
 
   return (
     <div className="page">
       <PageHeader
         title="Students"
         description="Enroll students, set monthly fees, and filter by class"
-      />
+      >
+        {canWrite && !showForm ? (
+          <button type="button" className="btn" onClick={openAddForm}>
+            Add student
+          </button>
+        ) : null}
+      </PageHeader>
+
       {canWrite && (
-        <div className="card">
-          <h3 className="card__title">{editingId ? 'Edit student' : 'Add student'}</h3>
-          {error && <p className="error-banner">{error}</p>}
+        <InlineFormCard
+          open={showForm}
+          title={editingId ? 'Edit student' : 'Add student'}
+          onClose={closeForm}
+          error={formError}
+        >
           <form className="form-grid" onSubmit={submit}>
             <label>
               Full name
@@ -144,20 +169,19 @@ export default function Students() {
             </label>
             <div className="toolbar">
               <button type="submit" className="btn" disabled={saving}>
-                {saving ? 'Saving…' : editingId ? 'Update' : 'Add student'}
+                {saving ? 'Saving…' : editingId ? 'Update student' : 'Save student'}
               </button>
-              {editingId && (
-                <button type="button" className="btn secondary" onClick={cancelEdit}>
-                  Cancel
-                </button>
-              )}
+              <button type="button" className="btn secondary" onClick={closeForm}>
+                Cancel
+              </button>
             </div>
           </form>
-        </div>
+        </InlineFormCard>
       )}
 
       <div className="card card--elevated">
         <h3 className="card__title">Student records</h3>
+        {listError ? <p className="error-banner">{listError}</p> : null}
         <div className="filters">
           <label>
             Search
@@ -185,59 +209,60 @@ export default function Students() {
         {loading ? (
           <TableSkeleton rows={7} columns={6} />
         ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Roll</th>
-                <th>Class</th>
-                <th>Monthly fee</th>
-                <th>Guardian</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.full_name}</td>
-                  <td>{s.roll_number}</td>
-                  <td>{s.class_section}</td>
-                  <td>{formatMoney(s.monthly_fee)}</td>
-                  <td>{s.guardian_contact}</td>
-                  <td>
-                    {canWrite && (
-                      <button
-                        type="button"
-                        className="btn small secondary"
-                        onClick={() => startEdit(s)}
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {isAdmin && s.is_active !== false && (
-                      <button
-                        type="button"
-                        className="btn small secondary"
-                        style={{ marginLeft: '0.35rem' }}
-                        onClick={() => api.deactivateStudent(s.id).then(load)}
-                      >
-                        Deactivate
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {!loading && students.length === 0 && (
+          <div className="table-wrap">
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan={6} className="table-empty">
-                    No students yet.
-                  </td>
+                  <th>Name</th>
+                  <th>Roll</th>
+                  <th>Class</th>
+                  <th>Monthly fee</th>
+                  <th>Guardian</th>
+                  <th />
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {students.map((s) => (
+                  <tr key={s.id}>
+                    <td>{s.full_name}</td>
+                    <td>{s.roll_number}</td>
+                    <td>{s.class_section}</td>
+                    <td>{formatMoney(s.monthly_fee)}</td>
+                    <td>{s.guardian_contact}</td>
+                    <td>
+                      {canWrite && (
+                        <button
+                          type="button"
+                          className="btn small secondary"
+                          onClick={() => startEdit(s)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                      {isAdmin && s.is_active !== false && (
+                        <button
+                          type="button"
+                          className="btn small secondary"
+                          style={{ marginLeft: '0.35rem' }}
+                          onClick={() => api.deactivateStudent(s.id).then(() => load({ silent: true }))}
+                        >
+                          Deactivate
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {!loading && students.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="table-empty">
+                      No students yet.{' '}
+                      {canWrite ? 'Click Add student to enroll the first one.' : ''}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

@@ -291,6 +291,23 @@ select {
   letter-spacing: -0.02em;
 }
 
+.form-card {
+  border-color: var(--primary-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.form-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.form-card__head .card__title {
+  margin-bottom: 0;
+}
+
 .card-footnote {
   color: var(--muted);
   margin: 1.1rem 0 0;

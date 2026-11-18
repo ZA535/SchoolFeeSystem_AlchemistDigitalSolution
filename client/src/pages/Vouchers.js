@@ -7,6 +7,7 @@ import PaymentSuccessBanner from '../components/PaymentSuccessBanner.js';
 import { useAuth } from '../auth/AuthContext.js';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
+import InlineFormCard from '../components/InlineFormCard.js';
 
 export default function Vouchers() {
   const { canCollect } = useAuth();
@@ -256,8 +257,12 @@ export default function Vouchers() {
       </div>
 
       {payModal && canCollect && (
-        <div className="card" style={{ borderColor: 'var(--primary)' }}>
-          <h3>Record payment — {payModal.student?.full_name}</h3>
+        <InlineFormCard
+          open
+          title={`Record payment — ${payModal.student?.full_name}`}
+          onClose={() => setPayModal(null)}
+          error={payError}
+        >
           <PaymentEntryForm
             amountDue={payModal.amount_due}
             amountPaid={payModal.amount_paid}
@@ -266,9 +271,9 @@ export default function Vouchers() {
             onSubmit={submitPayment}
             onCancel={() => setPayModal(null)}
             saving={paying}
-            error={payError}
+            error=""
           />
-        </div>
+        </InlineFormCard>
       )}
     </div>
   );

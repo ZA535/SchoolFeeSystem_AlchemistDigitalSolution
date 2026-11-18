@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { Navigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader.js';
 import TableSkeleton from '../components/TableSkeleton.js';
+import InlineFormCard from '../components/InlineFormCard.js';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -11,24 +12,30 @@ const ROLES = [
   { value: 'viewer', label: 'Viewer (read-only)' },
 ];
 
+const emptyUserForm = {
+  email: '',
+  password: '',
+  full_name: '',
+  role: 'accountant',
+};
+
 export default function Users() {
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState([]);
   const [listLoading, setListLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    full_name: '',
-    role: 'accountant',
-  });
+  const [listError, setListError] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(emptyUserForm);
 
   const load = ({ silent = false } = {}) => {
     if (!silent) setListLoading(true);
+    setListError('');
     return api
       .getUsers()
       .then(setUsers)
-      .catch((e) => setError(e.message))
+      .catch((e) => setListError(e.message))
       .finally(() => setListLoading(false));
   };
 
@@ -40,15 +47,30 @@ export default function Users() {
     return <Navigate to="/" replace />;
   }
 
+  const closeForm = () => {
+    setFormOpen(false);
+    setForm(emptyUserForm);
+    setFormError('');
+  };
+
+  const openAddForm = () => {
+    setForm(emptyUserForm);
+    setFormError('');
+    setFormOpen(true);
+  };
+
   const create = async (e) => {
     e.preventDefault();
-    setError('');
+    setSaving(true);
+    setFormError('');
     try {
       await api.createUser(form);
-      setForm({ email: '', password: '', full_name: '', role: 'accountant' });
+      closeForm();
       await load({ silent: true });
     } catch (err) {
-      setError(err.message);
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -57,7 +79,7 @@ export default function Users() {
       await api.updateUser(u.id, { is_active: !u.is_active });
       await load({ silent: true });
     } catch (err) {
-      setError(err.message);
+      setListError(err.message);
     }
   };
 
@@ -66,9 +88,20 @@ export default function Users() {
       <PageHeader
         title="Staff users"
         description="Add accountants and read-only viewers. Credentials are stored securely on the server."
-      />
-      <div className="card card--elevated">
-        {error && <p className="error-banner">{error}</p>}
+      >
+        {!formOpen ? (
+          <button type="button" className="btn" onClick={openAddForm}>
+            Add staff
+          </button>
+        ) : null}
+      </PageHeader>
+
+      <InlineFormCard
+        open={formOpen}
+        title="Add staff member"
+        onClose={closeForm}
+        error={formError}
+      >
         <form className="form-grid" onSubmit={create}>
           <label>
             Full name
@@ -110,47 +143,64 @@ export default function Users() {
               ))}
             </select>
           </label>
-          <button type="submit" className="btn">
-            Add user
-          </button>
+          <div className="toolbar">
+            <button type="submit" className="btn" disabled={saving}>
+              {saving ? 'Saving…' : 'Save user'}
+            </button>
+            <button type="button" className="btn secondary" onClick={closeForm}>
+              Cancel
+            </button>
+          </div>
         </form>
+      </InlineFormCard>
+
+      <div className="card card--elevated">
+        <h3 className="card__title">Staff list</h3>
+        {listError ? <p className="error-banner">{listError}</p> : null}
+        {listLoading ? (
+          <TableSkeleton rows={5} columns={5} />
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Active</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.full_name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td>{u.is_active ? 'Yes' : 'No'}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn small secondary"
+                        onClick={() => toggleActive(u)}
+                      >
+                        {u.is_active ? 'Disable' : 'Enable'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {users.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="table-empty">
+                      No staff yet. Click Add staff to create an account.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      {listLoading ? (
-        <TableSkeleton rows={5} columns={5} />
-      ) : (
-      <div className="card table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Active</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td>{u.full_name}</td>
-                <td>{u.email}</td>
-                <td>{u.role}</td>
-                <td>{u.is_active ? 'Yes' : 'No'}</td>
-                <td>
-                  <button
-                    type="button"
-                    className="btn small secondary"
-                    onClick={() => toggleActive(u)}
-                  >
-                    {u.is_active ? 'Disable' : 'Enable'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      )}
     </div>
   );
 }
