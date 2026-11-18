@@ -6,6 +6,10 @@ import TableSkeleton from '../components/TableSkeleton.js';
 import InlineFormCard from '../components/InlineFormCard.js';
 import TablePagination from '../components/TablePagination.js';
 import { usePagination } from '../hooks/usePagination.js';
+import { useToast } from '../components/ToastProvider.js';
+import EmptyState from '../components/EmptyState.js';
+import ConfirmDialog from '../components/ConfirmDialog.js';
+import FilterChips from '../components/FilterChips.js';
 
 const emptyForm = {
   full_name: '',
@@ -17,6 +21,7 @@ const emptyForm = {
 
 export default function Students() {
   const { canWrite, isAdmin } = useAuth();
+  const { toast } = useToast();
   const [students, setStudents] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -27,6 +32,8 @@ export default function Students() {
   const [formError, setFormError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(null);
+  const [deactivating, setDeactivating] = useState(false);
 
   const load = ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -84,13 +91,16 @@ export default function Students() {
     try {
       if (editingId) {
         await api.updateStudent(editingId, payload);
+        toast('Student updated successfully.', { type: 'success' });
       } else {
         await api.createStudent(payload);
+        toast('Student added successfully.', { type: 'success' });
       }
       closeForm();
       await load({ silent: true });
     } catch (err) {
       setFormError(err.message);
+      toast(err.message, { type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -99,6 +109,21 @@ export default function Students() {
   const classOptions = [...new Set(students.map((s) => s.class_section))].sort();
   const pagination = usePagination(students, undefined, [filterClass, search]);
   const showForm = formOpen;
+
+  const runDeactivate = async () => {
+    if (!confirmDeactivate) return;
+    setDeactivating(true);
+    try {
+      await api.deactivateStudent(confirmDeactivate.id);
+      toast('Student deactivated.', { type: 'info' });
+      setConfirmDeactivate(null);
+      await load({ silent: true });
+    } catch (err) {
+      toast(err.message, { type: 'error' });
+    } finally {
+      setDeactivating(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -182,6 +207,7 @@ export default function Students() {
         </InlineFormCard>
       )}
 
+      {!showForm && (
       <div className="card card--elevated">
         <h3 className="card__title">Student records</h3>
         {listError ? <p className="error-banner">{listError}</p> : null}
@@ -209,10 +235,40 @@ export default function Students() {
             </select>
           </label>
         </div>
+        <FilterChips
+          filters={[
+            { key: 'search', label: 'Search', value: search },
+            { key: 'class', label: 'Class', value: filterClass },
+          ]}
+          onRemove={(key) => {
+            if (key === 'search') setSearch('');
+            if (key === 'class') setFilterClass('');
+          }}
+          onClear={() => {
+            setSearch('');
+            setFilterClass('');
+          }}
+        />
         {loading ? (
           <TableSkeleton rows={7} columns={6} />
+        ) : students.length === 0 ? (
+          <EmptyState
+            title="No students found"
+            description={
+              search || filterClass
+                ? 'Try adjusting your search or class filter.'
+                : 'Enroll your first student to start collecting fees.'
+            }
+            action={
+              canWrite && !search && !filterClass ? (
+                <button type="button" className="btn" onClick={openAddForm}>
+                  Add student
+                </button>
+              ) : null
+            }
+          />
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap table-wrap--sticky">
             <table>
               <thead>
                 <tr>
@@ -247,7 +303,7 @@ export default function Students() {
                           type="button"
                           className="btn small secondary"
                           style={{ marginLeft: '0.35rem' }}
-                          onClick={() => api.deactivateStudent(s.id).then(() => load({ silent: true }))}
+                          onClick={() => setConfirmDeactivate(s)}
                         >
                           Deactivate
                         </button>
@@ -255,14 +311,6 @@ export default function Students() {
                     </td>
                   </tr>
                 ))}
-                {!loading && students.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="table-empty">
-                      No students yet.{' '}
-                      {canWrite ? 'Click Add student to enroll the first one.' : ''}
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
@@ -278,6 +326,22 @@ export default function Students() {
           />
         )}
       </div>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(confirmDeactivate)}
+        title="Deactivate student?"
+        message={
+          confirmDeactivate
+            ? `${confirmDeactivate.full_name} will be hidden from new vouchers. You can still view past records.`
+            : ''
+        }
+        confirmLabel="Deactivate"
+        danger
+        busy={deactivating}
+        onConfirm={runDeactivate}
+        onCancel={() => setConfirmDeactivate(null)}
+      />
     </div>
   );
 }

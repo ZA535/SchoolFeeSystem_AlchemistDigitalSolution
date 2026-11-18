@@ -9,6 +9,7 @@ export default function InlineFormCard({ open, title, onClose, error, children }
           Close
         </button>
       </div>
+      <p className="form-card__hint">Fill in the details below. Close to return to the list.</p>
       {error ? <p className="error-banner">{error}</p> : null}
       {children}
     </div>

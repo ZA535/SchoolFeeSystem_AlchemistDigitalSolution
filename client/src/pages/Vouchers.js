@@ -10,9 +10,12 @@ import TableSkeleton from '../components/TableSkeleton.js';
 import InlineFormCard from '../components/InlineFormCard.js';
 import TablePagination from '../components/TablePagination.js';
 import { usePagination } from '../hooks/usePagination.js';
+import { useToast } from '../components/ToastProvider.js';
+import FilterChips from '../components/FilterChips.js';
 
 export default function Vouchers() {
   const { canCollect } = useAuth();
+  const { toast } = useToast();
   const now = new Date();
   const [year, setYear] = useState(String(now.getFullYear()));
   const [month, setMonth] = useState(String(now.getMonth() + 1));
@@ -94,8 +97,15 @@ export default function Vouchers() {
       });
       setPayModal(null);
       await load({ silent: true });
+      toast(
+        voucher.status === 'paid'
+          ? `Payment recorded — voucher marked paid (receipt ${payment.receipt_number}).`
+          : `Payment recorded — receipt ${payment.receipt_number}.`,
+        { type: 'success' }
+      );
     } catch (err) {
       setPayError(err.message);
+      toast(err.message, { type: 'error' });
     } finally {
       setPaying(false);
     }
@@ -113,6 +123,7 @@ export default function Vouchers() {
         description="Filter by class or status, record payments, print challans"
       />
 
+      {!payModal && (
       <div className="card card--elevated">
         <div className="filters">
           <label>
@@ -168,12 +179,29 @@ export default function Vouchers() {
             Unpaid only
           </label>
         </div>
+        <FilterChips
+          filters={[
+            { key: 'class', label: 'Class', value: classSection },
+            { key: 'status', label: 'Status', value: statusFilter },
+            ...(unpaidOnly ? [{ key: 'unpaid', label: 'View', value: 'Unpaid only' }] : []),
+          ]}
+          onRemove={(key) => {
+            if (key === 'class') setClassSection('');
+            if (key === 'status') setStatusFilter('');
+            if (key === 'unpaid') setUnpaidOnly(false);
+          }}
+          onClear={() => {
+            setClassSection('');
+            setStatusFilter('');
+            setUnpaidOnly(false);
+          }}
+        />
         {error && !payModal && <p className="error-banner">{error}</p>}
         {loading ? (
           <TableSkeleton rows={8} columns={8} />
         ) : (
-        <div className="table-wrap">
-          <table>
+        <div className="table-wrap table-wrap--sticky">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>Student</th>
@@ -275,6 +303,7 @@ export default function Vouchers() {
           />
         )}
       </div>
+      )}
 
       {payModal && canCollect && (
         <InlineFormCard

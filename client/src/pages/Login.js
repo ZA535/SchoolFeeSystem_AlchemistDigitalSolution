@@ -27,7 +27,7 @@ export default function Login() {
   };
 
   return (
-    <div className="login-scene">
+    <div className="login-scene login-scene--premium">
       <aside className="login-brand" aria-hidden="false">
         <span className="brand-mark brand-mark--lg" aria-hidden />
         <h1 className="login-brand__title">{schoolName}</h1>
@@ -69,7 +69,14 @@ export default function Login() {
               />
             </label>
             <button type="submit" className="btn btn-block" disabled={saving}>
-              {saving ? 'Signing in…' : 'Sign in'}
+              {saving ? (
+                <>
+                  <span className="spinner spinner--btn" aria-hidden />
+                  Signing in…
+                </>
+              ) : (
+                'Sign in'
+              )}
             </button>
           </form>
         </div>
