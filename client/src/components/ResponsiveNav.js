@@ -20,10 +20,7 @@ export default function ResponsiveNav({ links, onNavigate }) {
       >
         {open ? 'Close menu' : 'Menu'}
       </button>
-      <div
-        id="main-nav-list"
-        className={`nav-links ${open ? 'nav-links--open' : ''}`}
-      >
+      <div id="main-nav-list" className={`nav-links ${open ? 'nav-links--open' : ''}`}>
         {links.map((link) => (
           <NavLink
             key={link.to}

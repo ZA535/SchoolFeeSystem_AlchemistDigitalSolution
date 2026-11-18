@@ -37,9 +37,7 @@ export default function ChallanPage() {
           schoolName={import.meta.env.VITE_SCHOOL_NAME || 'Your School Name'}
         />
       )}
-      {loading && !error && (
-        <LoadingPanel label="Loading challan…" minHeight="14rem" />
-      )}
+      {loading && !error && <LoadingPanel label="Loading challan…" minHeight="14rem" />}
     </div>
   );
 }

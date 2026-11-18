@@ -175,68 +175,70 @@ export default function Users() {
       </InlineFormCard>
 
       {!formOpen && (
-      <div className="card card--elevated">
-        <h3 className="card__title">Staff list</h3>
-        {listError ? <p className="error-banner">{listError}</p> : null}
-        {listLoading ? (
-          <TableSkeleton rows={5} columns={5} />
-        ) : (
-          <div className="table-wrap table-wrap--sticky">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Active</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {pagination.pageItems.map((u) => (
-                  <tr key={u.id}>
-                    <td>{u.full_name}</td>
-                    <td>{u.email}</td>
-                    <td>{u.role}</td>
-                    <td>{u.is_active ? 'Yes' : 'No'}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn small secondary"
-                        onClick={() => setConfirmToggle(u)}
-                      >
-                        {u.is_active ? 'Disable' : 'Enable'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {users.length === 0 && (
+        <div className="card card--elevated">
+          <h3 className="card__title">Staff list</h3>
+          {listError ? <p className="error-banner">{listError}</p> : null}
+          {listLoading ? (
+            <TableSkeleton rows={5} columns={5} />
+          ) : (
+            <div className="table-wrap table-wrap--sticky">
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan={5} className="table-empty">
-                      No staff yet. Click Add staff to create an account.
-                    </td>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Active</th>
+                    <th />
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {!listLoading && (
-          <TablePagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.totalItems}
-            startIndex={pagination.startIndex}
-            endIndex={pagination.endIndex}
-            onPageChange={pagination.setPage}
-          />
-        )}
-      </div>
+                </thead>
+                <tbody>
+                  {pagination.pageItems.map((u) => (
+                    <tr key={u.id}>
+                      <td>{u.full_name}</td>
+                      <td>{u.email}</td>
+                      <td>{u.role}</td>
+                      <td>{u.is_active ? 'Yes' : 'No'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn small secondary"
+                          onClick={() => setConfirmToggle(u)}
+                        >
+                          {u.is_active ? 'Disable' : 'Enable'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="table-empty">
+                        No staff yet. Click Add staff to create an account.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!listLoading && (
+            <TablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              startIndex={pagination.startIndex}
+              endIndex={pagination.endIndex}
+              onPageChange={pagination.setPage}
+            />
+          )}
+        </div>
       )}
 
       <ConfirmDialog
         open={Boolean(confirmToggle)}
-        title={confirmToggle?.is_active ? 'Disable staff account?' : 'Enable staff account?'}
+        title={
+          confirmToggle?.is_active ? 'Disable staff account?' : 'Enable staff account?'
+        }
         message={
           confirmToggle
             ? confirmToggle.is_active

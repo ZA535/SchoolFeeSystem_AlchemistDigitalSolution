@@ -1,15 +1,9 @@
 import { supabase } from '../../infrastructure/supabase.client.js';
 import { withDbTimeout } from '../../infrastructure/supabase-timeout.js';
 import { generateReceiptNumber } from '../../shared/receipt.util.js';
-import {
-  currentBillingPeriod,
-  defaultDueDate,
-} from '../../shared/voucher.util.js';
+import { currentBillingPeriod, defaultDueDate } from '../../shared/voucher.util.js';
 import { syncVoucherStatuses } from '../../shared/voucher-status.service.js';
-import {
-  assertSupabaseOk,
-  assertSupabaseRow,
-} from '../../shared/supabase-errors.js';
+import { assertSupabaseOk, assertSupabaseRow } from '../../shared/supabase-errors.js';
 import { AppError } from '../../shared/app-error.js';
 
 async function fetchStudentsForVouchers(studentIds) {

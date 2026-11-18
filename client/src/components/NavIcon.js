@@ -8,7 +8,12 @@ const stroke = {
 
 export default function NavIcon({ name }) {
   const size = 20;
-  const common = { width: size, height: size, viewBox: '0 0 24 24', 'aria-hidden': true };
+  const common = {
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    'aria-hidden': true,
+  };
 
   switch (name) {
     case 'dashboard':
@@ -37,7 +42,10 @@ export default function NavIcon({ name }) {
     case 'vouchers':
       return (
         <svg {...common}>
-          <path {...stroke} d="M8 3h8a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2z" />
+          <path
+            {...stroke}
+            d="M8 3h8a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2z"
+          />
           <path {...stroke} d="M9 8h6M9 12h4" />
         </svg>
       );

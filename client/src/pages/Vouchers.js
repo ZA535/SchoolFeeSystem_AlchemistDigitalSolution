@@ -124,186 +124,192 @@ export default function Vouchers() {
       />
 
       {!payModal && (
-      <div className="card card--elevated">
-        <div className="filters">
-          <label>
-            Year
-            <input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            />
-          </label>
-          <label>
-            Month
-            <input
-              type="number"
-              min="1"
-              max="12"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
-          </label>
-          <label>
-            Class / Section
-            <select
-              value={classSection}
-              onChange={(e) => setClassSection(e.target.value)}
+        <div className="card card--elevated">
+          <div className="filters">
+            <label>
+              Year
+              <input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </label>
+            <label>
+              Month
+              <input
+                type="number"
+                min="1"
+                max="12"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+              />
+            </label>
+            <label>
+              Class / Section
+              <select
+                value={classSection}
+                onChange={(e) => setClassSection(e.target.value)}
+              >
+                <option value="">All</option>
+                {classOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Payment status
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">All</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="partial">Partial</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </label>
+            <label
+              style={{ flexDirection: 'row', alignItems: 'center', gap: '0.4rem' }}
             >
-              <option value="">All</option>
-              {classOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Payment status
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">All</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-              <option value="partial">Partial</option>
-              <option value="overdue">Overdue</option>
-            </select>
-          </label>
-          <label style={{ flexDirection: 'row', alignItems: 'center', gap: '0.4rem' }}>
-            <input
-              type="checkbox"
-              checked={unpaidOnly}
-              onChange={(e) => setUnpaidOnly(e.target.checked)}
-            />
-            Unpaid only
-          </label>
-        </div>
-        <FilterChips
-          filters={[
-            { key: 'class', label: 'Class', value: classSection },
-            { key: 'status', label: 'Status', value: statusFilter },
-            ...(unpaidOnly ? [{ key: 'unpaid', label: 'View', value: 'Unpaid only' }] : []),
-          ]}
-          onRemove={(key) => {
-            if (key === 'class') setClassSection('');
-            if (key === 'status') setStatusFilter('');
-            if (key === 'unpaid') setUnpaidOnly(false);
-          }}
-          onClear={() => {
-            setClassSection('');
-            setStatusFilter('');
-            setUnpaidOnly(false);
-          }}
-        />
-        {error && !payModal && <p className="error-banner">{error}</p>}
-        {loading ? (
-          <TableSkeleton rows={8} columns={8} />
-        ) : (
-        <div className="table-wrap table-wrap--sticky">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Roll</th>
-                <th>Class</th>
-                <th>Due</th>
-                <th>Paid</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th>Last receipt</th>
-                <th>Last payment</th>
-                <th>Due date</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {pagination.pageItems.map((v) => {
-                const balance = Number(v.amount_due) - Number(v.amount_paid);
-                const lp = v.latest_payment;
-                return (
-                  <tr key={v.id}>
-                    <td>{v.student?.full_name}</td>
-                    <td>{v.student?.roll_number}</td>
-                    <td>{v.student?.class_section}</td>
-                    <td>{formatMoney(v.amount_due)}</td>
-                    <td>{formatMoney(v.amount_paid)}</td>
-                    <td>{formatMoney(balance)}</td>
-                    <td>
-                      <span className={`badge ${v.status}`}>{v.status}</span>
-                    </td>
-                    <td className="mono">
-                      {lp?.receipt_number || v.receipt_number || '—'}
-                    </td>
-                    <td>
-                      {lp ? (
-                        <>
-                          {lp.payment_date}
-                          <br />
-                          <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                            {paymentMethodLabel(lp.payment_method)}
-                          </span>
-                        </>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                    <td>{v.due_date}</td>
-                    <td>
-                      {balance > 0.01 && canCollect && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn small"
-                            onClick={() => openPay(v)}
-                          >
-                            Record payment
-                          </button>
-                          <Link
-                            to={`/challan/${v.id}`}
-                            className="btn small secondary"
-                            style={{ marginLeft: '0.35rem' }}
-                          >
-                            Challan
-                          </Link>
-                        </>
-                      )}
-                      {Number(v.amount_paid) > 0 && (
-                        <Link
-                          to={`/receipt/${v.id}`}
-                          className="btn small secondary"
-                          style={{ marginLeft: '0.35rem' }}
-                        >
-                          Receipt
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-              {!loading && vouchers.length === 0 && (
-                <tr>
-                  <td colSpan={11} className="table-empty">
-                    No vouchers for this period. Generate them from the Dashboard.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        )}
-        {!loading && (
-          <TablePagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.totalItems}
-            startIndex={pagination.startIndex}
-            endIndex={pagination.endIndex}
-            onPageChange={pagination.setPage}
+              <input
+                type="checkbox"
+                checked={unpaidOnly}
+                onChange={(e) => setUnpaidOnly(e.target.checked)}
+              />
+              Unpaid only
+            </label>
+          </div>
+          <FilterChips
+            filters={[
+              { key: 'class', label: 'Class', value: classSection },
+              { key: 'status', label: 'Status', value: statusFilter },
+              ...(unpaidOnly
+                ? [{ key: 'unpaid', label: 'View', value: 'Unpaid only' }]
+                : []),
+            ]}
+            onRemove={(key) => {
+              if (key === 'class') setClassSection('');
+              if (key === 'status') setStatusFilter('');
+              if (key === 'unpaid') setUnpaidOnly(false);
+            }}
+            onClear={() => {
+              setClassSection('');
+              setStatusFilter('');
+              setUnpaidOnly(false);
+            }}
           />
-        )}
-      </div>
+          {error && !payModal && <p className="error-banner">{error}</p>}
+          {loading ? (
+            <TableSkeleton rows={8} columns={8} />
+          ) : (
+            <div className="table-wrap table-wrap--sticky">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Roll</th>
+                    <th>Class</th>
+                    <th>Due</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Last receipt</th>
+                    <th>Last payment</th>
+                    <th>Due date</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagination.pageItems.map((v) => {
+                    const balance = Number(v.amount_due) - Number(v.amount_paid);
+                    const lp = v.latest_payment;
+                    return (
+                      <tr key={v.id}>
+                        <td>{v.student?.full_name}</td>
+                        <td>{v.student?.roll_number}</td>
+                        <td>{v.student?.class_section}</td>
+                        <td>{formatMoney(v.amount_due)}</td>
+                        <td>{formatMoney(v.amount_paid)}</td>
+                        <td>{formatMoney(balance)}</td>
+                        <td>
+                          <span className={`badge ${v.status}`}>{v.status}</span>
+                        </td>
+                        <td className="mono">
+                          {lp?.receipt_number || v.receipt_number || '—'}
+                        </td>
+                        <td>
+                          {lp ? (
+                            <>
+                              {lp.payment_date}
+                              <br />
+                              <span
+                                style={{ fontSize: '0.8rem', color: 'var(--muted)' }}
+                              >
+                                {paymentMethodLabel(lp.payment_method)}
+                              </span>
+                            </>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                        <td>{v.due_date}</td>
+                        <td>
+                          {balance > 0.01 && canCollect && (
+                            <>
+                              <button
+                                type="button"
+                                className="btn small"
+                                onClick={() => openPay(v)}
+                              >
+                                Record payment
+                              </button>
+                              <Link
+                                to={`/challan/${v.id}`}
+                                className="btn small secondary"
+                                style={{ marginLeft: '0.35rem' }}
+                              >
+                                Challan
+                              </Link>
+                            </>
+                          )}
+                          {Number(v.amount_paid) > 0 && (
+                            <Link
+                              to={`/receipt/${v.id}`}
+                              className="btn small secondary"
+                              style={{ marginLeft: '0.35rem' }}
+                            >
+                              Receipt
+                            </Link>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!loading && vouchers.length === 0 && (
+                    <tr>
+                      <td colSpan={11} className="table-empty">
+                        No vouchers for this period. Generate them from the Dashboard.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!loading && (
+            <TablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              startIndex={pagination.startIndex}
+              endIndex={pagination.endIndex}
+              onPageChange={pagination.setPage}
+            />
+          )}
+        </div>
       )}
 
       {payModal && canCollect && (

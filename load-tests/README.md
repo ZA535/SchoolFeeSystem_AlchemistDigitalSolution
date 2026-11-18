@@ -28,12 +28,12 @@ npm run load:api
 
 Env:
 
-| Variable | Default |
-|----------|---------|
-| `LOAD_TEST_BASE` | `http://localhost:4000` |
-| `LOAD_TEST_TOKEN` | (required for `/api/*`) |
-| `LOAD_CONNECTIONS` | `20` |
-| `LOAD_DURATION` | `15` |
+| Variable           | Default                 |
+| ------------------ | ----------------------- |
+| `LOAD_TEST_BASE`   | `http://localhost:4000` |
+| `LOAD_TEST_TOKEN`  | (required for `/api/*`) |
+| `LOAD_CONNECTIONS` | `20`                    |
+| `LOAD_DURATION`    | `15`                    |
 
 ## k6
 

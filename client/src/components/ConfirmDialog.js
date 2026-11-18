@@ -28,7 +28,12 @@ export default function ConfirmDialog({
           {message}
         </p>
         <div className="confirm-dialog__actions">
-          <button type="button" className="btn secondary" onClick={onCancel} disabled={busy}>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={onCancel}
+            disabled={busy}
+          >
             {cancelLabel}
           </button>
           <button

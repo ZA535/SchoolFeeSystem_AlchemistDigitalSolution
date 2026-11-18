@@ -7,9 +7,7 @@ const duration = Number(process.env.LOAD_DURATION) || 15;
 
 const headers = token ? { authorization: `Bearer ${token}` } : {};
 
-const scenarios = [
-  { title: 'GET /health', url: `${base}/health` },
-];
+const scenarios = [{ title: 'GET /health', url: `${base}/health` }];
 
 if (token) {
   scenarios.push(

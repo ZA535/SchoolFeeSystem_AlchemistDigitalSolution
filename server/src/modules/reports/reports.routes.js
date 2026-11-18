@@ -143,9 +143,11 @@ router.get('/defaulters-by-class', async (req, res, next) => {
     for (const v of vouchers ?? []) {
       const balance = Number(v.amount_due) - Number(v.amount_paid);
       if (balance <= 0.001) continue;
-      if (v.status !== 'overdue' && v.status !== 'partial' && v.status !== 'pending') continue;
+      if (v.status !== 'overdue' && v.status !== 'partial' && v.status !== 'pending')
+        continue;
       const cls = studentMap[v.student_id]?.class_section ?? 'Unknown';
-      if (!byClass[cls]) byClass[cls] = { class_section: cls, defaulter_count: 0, balance_due: 0 };
+      if (!byClass[cls])
+        byClass[cls] = { class_section: cls, defaulter_count: 0, balance_due: 0 };
       byClass[cls].defaulter_count += 1;
       byClass[cls].balance_due += balance;
     }

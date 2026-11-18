@@ -20,7 +20,9 @@ export default function TableSkeleton({ rows = 6, columns = 5 }) {
                 <td key={c}>
                   <span
                     className="skeleton skeleton--text"
-                    style={{ width: c === 0 ? '70%' : c === safeCols - 1 ? '45%' : '55%' }}
+                    style={{
+                      width: c === 0 ? '70%' : c === safeCols - 1 ? '45%' : '55%',
+                    }}
                   />
                 </td>
               ))}

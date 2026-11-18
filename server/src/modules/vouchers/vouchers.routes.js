@@ -2,10 +2,7 @@ import { Router } from 'express';
 import { requireRole } from '../../middleware/auth.middleware.js';
 import { logAudit } from '../../shared/audit.service.js';
 import { asyncHandler } from '../../middleware/async.middleware.js';
-import {
-  generateVouchersSchema,
-  recordPaymentSchema,
-} from './vouchers.validation.js';
+import { generateVouchersSchema, recordPaymentSchema } from './vouchers.validation.js';
 import {
   listVouchers,
   listVoucherPayments,

@@ -39,7 +39,9 @@ export default function Dashboard() {
     try {
       await api.generateVouchers({ year, month });
       await load({ silent: true });
-      toast(`Monthly vouchers generated for ${monthLabel(year, month)}.`, { type: 'success' });
+      toast(`Monthly vouchers generated for ${monthLabel(year, month)}.`, {
+        type: 'success',
+      });
     } catch (e) {
       setError(e.message);
       toast(e.message, { type: 'error' });
@@ -52,7 +54,9 @@ export default function Dashboard() {
     summary && Number(summary.total_expected) > 0
       ? Math.min(
           100,
-          Math.round((Number(summary.total_collected) / Number(summary.total_expected)) * 100)
+          Math.round(
+            (Number(summary.total_collected) / Number(summary.total_expected)) * 100
+          )
         )
       : 0;
 
@@ -69,16 +73,22 @@ export default function Dashboard() {
           {canCollect && (
             <Link to="/collect" className="quick-action quick-action--teal">
               <span className="quick-action__title">Collect fee</span>
-              <span className="quick-action__desc">Record cash, bank, or wallet payments</span>
+              <span className="quick-action__desc">
+                Record cash, bank, or wallet payments
+              </span>
             </Link>
           )}
           <Link to="/vouchers" className="quick-action quick-action--indigo">
             <span className="quick-action__title">Fee vouchers</span>
-            <span className="quick-action__desc">Filter, pay, print challans &amp; receipts</span>
+            <span className="quick-action__desc">
+              Filter, pay, print challans &amp; receipts
+            </span>
           </Link>
           <Link to="/reports" className="quick-action quick-action--amber">
             <span className="quick-action__title">Reports</span>
-            <span className="quick-action__desc">Defaulters &amp; daily collection totals</span>
+            <span className="quick-action__desc">
+              Defaulters &amp; daily collection totals
+            </span>
           </Link>
         </div>
       )}
@@ -128,14 +138,17 @@ export default function Dashboard() {
                 />
               </div>
               <p className="card-footnote">
-                {summary.voucher_count} voucher(s) · {summary.student_count} active student(s)
+                {summary.voucher_count} voucher(s) · {summary.student_count} active
+                student(s)
               </p>
             </div>
 
             <div className="insight-strip">
               <div>
                 <span className="insight-strip__label">Pending vs expected</span>
-                <span className="insight-strip__value">{formatMoney(summary.total_pending)}</span>
+                <span className="insight-strip__value">
+                  {formatMoney(summary.total_pending)}
+                </span>
               </div>
               <div>
                 <span className="insight-strip__label">Defaulters</span>

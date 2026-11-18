@@ -45,9 +45,7 @@ export default function ReceiptPage() {
           schoolName={import.meta.env.VITE_SCHOOL_NAME || 'Your School Name'}
         />
       )}
-      {loading && !error && (
-        <LoadingPanel label="Loading receipt…" minHeight="14rem" />
-      )}
+      {loading && !error && <LoadingPanel label="Loading receipt…" minHeight="14rem" />}
     </div>
   );
 }

@@ -208,124 +208,124 @@ export default function Students() {
       )}
 
       {!showForm && (
-      <div className="card card--elevated">
-        <h3 className="card__title">Student records</h3>
-        {listError ? <p className="error-banner">{listError}</p> : null}
-        <div className="filters">
-          <label>
-            Search
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Name or roll no."
-            />
-          </label>
-          <label>
-            Class / Section
-            <select
-              value={filterClass}
-              onChange={(e) => setFilterClass(e.target.value)}
-            >
-              <option value="">All</option>
-              {classOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <FilterChips
-          filters={[
-            { key: 'search', label: 'Search', value: search },
-            { key: 'class', label: 'Class', value: filterClass },
-          ]}
-          onRemove={(key) => {
-            if (key === 'search') setSearch('');
-            if (key === 'class') setFilterClass('');
-          }}
-          onClear={() => {
-            setSearch('');
-            setFilterClass('');
-          }}
-        />
-        {loading ? (
-          <TableSkeleton rows={7} columns={6} />
-        ) : students.length === 0 ? (
-          <EmptyState
-            title="No students found"
-            description={
-              search || filterClass
-                ? 'Try adjusting your search or class filter.'
-                : 'Enroll your first student to start collecting fees.'
-            }
-            action={
-              canWrite && !search && !filterClass ? (
-                <button type="button" className="btn" onClick={openAddForm}>
-                  Add student
-                </button>
-              ) : null
-            }
-          />
-        ) : (
-          <div className="table-wrap table-wrap--sticky">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Roll</th>
-                  <th>Class</th>
-                  <th>Monthly fee</th>
-                  <th>Guardian</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {pagination.pageItems.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.full_name}</td>
-                    <td>{s.roll_number}</td>
-                    <td>{s.class_section}</td>
-                    <td>{formatMoney(s.monthly_fee)}</td>
-                    <td>{s.guardian_contact}</td>
-                    <td>
-                      {canWrite && (
-                        <button
-                          type="button"
-                          className="btn small secondary"
-                          onClick={() => startEdit(s)}
-                        >
-                          Edit
-                        </button>
-                      )}
-                      {isAdmin && s.is_active !== false && (
-                        <button
-                          type="button"
-                          className="btn small secondary"
-                          style={{ marginLeft: '0.35rem' }}
-                          onClick={() => setConfirmDeactivate(s)}
-                        >
-                          Deactivate
-                        </button>
-                      )}
-                    </td>
-                  </tr>
+        <div className="card card--elevated">
+          <h3 className="card__title">Student records</h3>
+          {listError ? <p className="error-banner">{listError}</p> : null}
+          <div className="filters">
+            <label>
+              Search
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Name or roll no."
+              />
+            </label>
+            <label>
+              Class / Section
+              <select
+                value={filterClass}
+                onChange={(e) => setFilterClass(e.target.value)}
+              >
+                <option value="">All</option>
+                {classOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
-              </tbody>
-            </table>
+              </select>
+            </label>
           </div>
-        )}
-        {!loading && (
-          <TablePagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.totalItems}
-            startIndex={pagination.startIndex}
-            endIndex={pagination.endIndex}
-            onPageChange={pagination.setPage}
+          <FilterChips
+            filters={[
+              { key: 'search', label: 'Search', value: search },
+              { key: 'class', label: 'Class', value: filterClass },
+            ]}
+            onRemove={(key) => {
+              if (key === 'search') setSearch('');
+              if (key === 'class') setFilterClass('');
+            }}
+            onClear={() => {
+              setSearch('');
+              setFilterClass('');
+            }}
           />
-        )}
-      </div>
+          {loading ? (
+            <TableSkeleton rows={7} columns={6} />
+          ) : students.length === 0 ? (
+            <EmptyState
+              title="No students found"
+              description={
+                search || filterClass
+                  ? 'Try adjusting your search or class filter.'
+                  : 'Enroll your first student to start collecting fees.'
+              }
+              action={
+                canWrite && !search && !filterClass ? (
+                  <button type="button" className="btn" onClick={openAddForm}>
+                    Add student
+                  </button>
+                ) : null
+              }
+            />
+          ) : (
+            <div className="table-wrap table-wrap--sticky">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Roll</th>
+                    <th>Class</th>
+                    <th>Monthly fee</th>
+                    <th>Guardian</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagination.pageItems.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.full_name}</td>
+                      <td>{s.roll_number}</td>
+                      <td>{s.class_section}</td>
+                      <td>{formatMoney(s.monthly_fee)}</td>
+                      <td>{s.guardian_contact}</td>
+                      <td>
+                        {canWrite && (
+                          <button
+                            type="button"
+                            className="btn small secondary"
+                            onClick={() => startEdit(s)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {isAdmin && s.is_active !== false && (
+                          <button
+                            type="button"
+                            className="btn small secondary"
+                            style={{ marginLeft: '0.35rem' }}
+                            onClick={() => setConfirmDeactivate(s)}
+                          >
+                            Deactivate
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!loading && (
+            <TablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              startIndex={pagination.startIndex}
+              endIndex={pagination.endIndex}
+              onPageChange={pagination.setPage}
+            />
+          )}
+        </div>
       )}
 
       <ConfirmDialog

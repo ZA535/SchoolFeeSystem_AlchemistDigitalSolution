@@ -10,7 +10,8 @@ function ChallanCopy({ title, voucher, schoolName, student, balance }) {
         <strong>Ref:</strong> {voucher.id.slice(0, 8).toUpperCase()}
       </p>
       <p>
-        <strong>Period:</strong> {monthLabel(voucher.billing_year, voucher.billing_month)}
+        <strong>Period:</strong>{' '}
+        {monthLabel(voucher.billing_year, voucher.billing_month)}
       </p>
       <p>
         <strong>Due date:</strong> {voucher.due_date}

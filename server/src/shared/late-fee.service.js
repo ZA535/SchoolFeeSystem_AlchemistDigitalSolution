@@ -1,7 +1,11 @@
 import { supabase } from '../infrastructure/supabase.client.js';
 
 export async function getSchoolSettings() {
-  const { data, error } = await supabase.from('school_settings').select('*').eq('id', 1).maybeSingle();
+  const { data, error } = await supabase
+    .from('school_settings')
+    .select('*')
+    .eq('id', 1)
+    .maybeSingle();
   if (error && error.code !== 'PGRST116') throw error;
   return (
     data ?? {

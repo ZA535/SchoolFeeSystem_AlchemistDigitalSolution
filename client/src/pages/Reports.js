@@ -67,7 +67,10 @@ export default function Reports() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    api.getFeeRules().then(setFeeRules).catch(() => setFeeRules(null));
+    api
+      .getFeeRules()
+      .then(setFeeRules)
+      .catch(() => setFeeRules(null));
   }, [isAdmin]);
 
   const saveFeeRules = async (e) => {
@@ -178,37 +181,37 @@ export default function Reports() {
         {defaultersLoading ? (
           <TableSkeleton rows={6} columns={5} />
         ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Roll</th>
-                <th>Class</th>
-                <th>Balance</th>
-                <th>Guardian</th>
-              </tr>
-            </thead>
-            <tbody>
-              {defaultersPagination.pageItems.map((v) => (
-                <tr key={v.id}>
-                  <td>{v.student?.full_name}</td>
-                  <td>{v.student?.roll_number}</td>
-                  <td>{v.student?.class_section}</td>
-                  <td>{formatMoney(v.balance)}</td>
-                  <td>{v.student?.guardian_contact}</td>
-                </tr>
-              ))}
-              {defaulters && defaulters.count === 0 && (
+          <div className="table-wrap">
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan={5} style={{ color: 'var(--muted)' }}>
-                    No overdue students this month.
-                  </td>
+                  <th>Student</th>
+                  <th>Roll</th>
+                  <th>Class</th>
+                  <th>Balance</th>
+                  <th>Guardian</th>
                 </tr>
-              )}
-            </tbody>
+              </thead>
+              <tbody>
+                {defaultersPagination.pageItems.map((v) => (
+                  <tr key={v.id}>
+                    <td>{v.student?.full_name}</td>
+                    <td>{v.student?.roll_number}</td>
+                    <td>{v.student?.class_section}</td>
+                    <td>{formatMoney(v.balance)}</td>
+                    <td>{v.student?.guardian_contact}</td>
+                  </tr>
+                ))}
+                {defaulters && defaulters.count === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ color: 'var(--muted)' }}>
+                      No overdue students this month.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
-        </div>
+          </div>
         )}
         {!defaultersLoading && defaulterRows.length > 0 && (
           <TablePagination
@@ -255,11 +258,13 @@ export default function Reports() {
         <div className="card card--elevated">
           <h3 className="card__title">Late fee rules (admin)</h3>
           <p className="card-footnote" style={{ marginTop: 0 }}>
-            Flat late fee is applied once per voucher after due date. Waivers use credit/adjustment
-            entries (no receipt deletion).
+            Flat late fee is applied once per voucher after due date. Waivers use
+            credit/adjustment entries (no receipt deletion).
           </p>
           <form className="form-grid" onSubmit={saveFeeRules}>
-            <label style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+            <label
+              style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}
+            >
               <input
                 type="checkbox"
                 checked={Boolean(feeRules.late_fee_enabled)}
@@ -294,38 +299,38 @@ export default function Reports() {
           {auditLoading ? (
             <TableSkeleton rows={5} columns={4} />
           ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>When</th>
-                  <th>User</th>
-                  <th>Action</th>
-                  <th>Entity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {auditPagination.pageItems.map((row) => (
-                  <tr key={row.id}>
-                    <td>{new Date(row.created_at).toLocaleString()}</td>
-                    <td>{row.user_email || '—'}</td>
-                    <td>{row.action}</td>
-                    <td>
-                      {row.entity_type}
-                      {row.entity_id ? ` #${String(row.entity_id).slice(0, 8)}` : ''}
-                    </td>
-                  </tr>
-                ))}
-                {audit.length === 0 && (
+            <div className="table-wrap">
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan={4} style={{ color: 'var(--muted)' }}>
-                      No audit entries yet.
-                    </td>
+                    <th>When</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Entity</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {auditPagination.pageItems.map((row) => (
+                    <tr key={row.id}>
+                      <td>{new Date(row.created_at).toLocaleString()}</td>
+                      <td>{row.user_email || '—'}</td>
+                      <td>{row.action}</td>
+                      <td>
+                        {row.entity_type}
+                        {row.entity_id ? ` #${String(row.entity_id).slice(0, 8)}` : ''}
+                      </td>
+                    </tr>
+                  ))}
+                  {audit.length === 0 && (
+                    <tr>
+                      <td colSpan={4} style={{ color: 'var(--muted)' }}>
+                        No audit entries yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
           {!auditLoading && audit.length > 0 && (
             <TablePagination

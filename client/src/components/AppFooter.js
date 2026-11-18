@@ -3,7 +3,8 @@ export default function AppFooter() {
   return (
     <footer className="app-footer no-print">
       <p>
-        School Fee Management · {year} · Built for reliable fee collection &amp; reporting
+        School Fee Management · {year} · Built for reliable fee collection &amp;
+        reporting
       </p>
     </footer>
   );

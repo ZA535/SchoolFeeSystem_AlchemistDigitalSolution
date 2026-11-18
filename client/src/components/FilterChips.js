@@ -18,7 +18,11 @@ export default function FilterChips({ filters, onClear, onRemove }) {
         </button>
       ))}
       {active.length > 1 && (
-        <button type="button" className="filter-chip filter-chip--clear" onClick={onClear}>
+        <button
+          type="button"
+          className="filter-chip filter-chip--clear"
+          onClick={onClear}
+        >
           Clear all
         </button>
       )}
