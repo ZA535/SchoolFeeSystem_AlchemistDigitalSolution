@@ -1,10 +1,27 @@
 {
   "name": "school-fee-management-system",
+  "type": "module",
   "private": true,
   "scripts": {
     "install:all": "npm install --prefix server && npm install --prefix client",
     "dev": "npm run dev --prefix server & npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server",
-    "dev:client": "npm run dev --prefix client"
+    "dev:client": "npm run dev --prefix client",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "load:health": "autocannon -c 20 -d 15 http://localhost:4000/health",
+    "load:api": "node scripts/load-test.mjs",
+    "load:k6": "k6 run load-tests/k6-smoke.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.28.0",
+    "autocannon": "^8.0.0",
+    "eslint": "^9.28.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.2.0",
+    "prettier": "^3.10.1"
   }
 }

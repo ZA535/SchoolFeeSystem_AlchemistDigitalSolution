@@ -4,15 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file=.env --watch src/index.js",
-    "start": "node --env-file=.env src/index.js",
-    "check:supabase": "node --env-file=.env scripts/check-supabase.mjs"
+    "dev": "node --env-file=.env --watch src/server.js",
+    "start": "node --env-file=.env src/server.js",
+    "check:supabase": "node --env-file=.env scripts/check-supabase.mjs",
+    "seed:admin": "node --env-file=.env scripts/seed-admin.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "ws": "^8.23.0",
     "zod": "^3.24.2"
   }

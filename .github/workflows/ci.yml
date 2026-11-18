@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install dependencies
+        run: npm run install:all
+
+      - name: Prettier check
+        run: npx prettier --check .
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Build client
+        run: npm run build --prefix client
+
+      - name: Verify server loads
+        env:
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_example_key_placeholder_32
+          JWT_SECRET: ci_test_jwt_secret_minimum_32_characters_long
+        run: node --check server/src/server.js

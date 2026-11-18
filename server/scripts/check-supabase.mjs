@@ -1,8 +1,7 @@
-import '../src/loadEnv.js';
+import '../src/config/loadEnv.js';
 
 const url = process.env.SUPABASE_URL?.replace(/\/+$/, '');
-const key =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
 console.log('SUPABASE_URL:', url || '(missing)');
 console.log('Key set:', key ? `yes (${key.slice(0, 12)}…)` : 'no');
@@ -18,7 +17,9 @@ try {
   });
   console.log('\nHTTP status:', res.status, res.statusText);
   if (res.status === 401) {
-    console.log('Reachable, but key rejected — use Secret key or legacy service_role (eyJ…) in server/.env');
+    console.log(
+      'Reachable, but key rejected — use Secret key or legacy service_role (eyJ…) in server/.env'
+    );
   } else if (res.ok || res.status === 404) {
     console.log('Supabase REST API is reachable.');
   }
